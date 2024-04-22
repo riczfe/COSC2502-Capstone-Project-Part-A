@@ -1,12 +1,8 @@
 /**
  * @file drone.h
- * @author Giuseppe Sensolini (https://github.com/giusenso)
+ * @author 
  * @brief Drone essential structure and functions. 
- * @version 0.1
- * @date 2020-09-26
- * 
- * @copyright Copyright (c) 2020
- * 
+ * @date 22-04-2024
  */
 
 #pragma once
