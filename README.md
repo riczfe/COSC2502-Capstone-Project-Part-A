@@ -107,10 +107,9 @@ ccw  (4) (3)  cw
 
 
 ## Software
-- Language: C/C++, Matlab
-- IDE: Visual Studio Code w\ PlatformIO
-- Additional libs: Arduino.h, Servo.h
-
+- Languages: C/C++, MATLAB
+- IDE: Visual Studio Code with PlatformIO
+- Additional Libraries: `Arduino.h`, `Servo.h`
 
 **Repository structure**
 ```
@@ -187,5 +186,5 @@ typedef struct PID{
 ```
 
 ## Control System
-Sketch of control system for *full hovering maneuver*:
-<img src="img/quadcopter_hovering_control_system.png"  align="center">
+Visual representation of the control system for a full hovering maneuver:
+![Quadcopter Hovering Control System](img/quadcopter_hovering_control_system.png)
