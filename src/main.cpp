@@ -1,13 +1,10 @@
 /**
  * @file main.cpp
- * @author Giuseppe Sensolini (https://github.com/giusenso)
- * @brief Quadcopter drone flight controller design.
- * @repository: https://github.com/giusenso/autonomous-drone-flight-control
+ * @author 
+ * @brief 
+ * @repository: 
  * @version 0.2
- * @date 2020-09-26
- * 
- * @copyright Copyright (c) 2020
- * 
+ * @date 22-04-2024
  */
 
 #include <stdio.h>
