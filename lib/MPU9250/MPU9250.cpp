@@ -1,7 +1,5 @@
 /*
   MPU9250.cpp
-  Brian R Taylor
-  brian.taylor@bolderflight.com
   
   Copyright (c) 2017 Bolder Flight Systems
   
