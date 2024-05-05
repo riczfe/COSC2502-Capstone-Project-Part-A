@@ -1,5 +1,5 @@
-const char* ssid = "ESP32webhost_by_RECORD_BREAKERS"; //Enter SSID
-const char* password = "123456"; //Enter Password
+const char* ssid = "ESP32_ROBv1"; //Enter SSID
+const char* password = "yourpasswd"; //Enter Password
 
 #define AIN1 13
 #define BIN1 12
