@@ -106,6 +106,34 @@
         }
 
     </script>
+    <div id="potentiometerStatus">
+        Potentiometer Angle: <span id="potAngle">0</span> degrees
+    </div>
+      
+    <script>
+        // Assuming you have a way to send this data from ESP32 to the client
+        ws.onmessage = function(event) {
+            if(event.data.startsWith("pot:")) {
+                document.getElementById('potAngle').textContent = event.data.split(':')[1];
+            } else {
+            // Existing message handling
+            }
+        };
+    </script>
+
+    <div id="escControl">
+        <label for="escSlider">ESC Control:</label>
+        <input type="range" id="escSlider" min="0" max="180" value="90" oninput="updateSlider(this.value)">
+        <span id="sliderValue">90</span> degrees
+    </div>
+
+    <script>
+        function updateSlider(value) {
+            document.getElementById('sliderValue').textContent = value;
+            ws.send(`POT:${value}`); // Sends the potentiometer value prefixed with "POT:"
+        }
+    </script>
+
 </body>
 
 <script type="text/javascript">

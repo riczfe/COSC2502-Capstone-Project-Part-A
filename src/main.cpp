@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <TB6612_ESP32.h>
+#include <ESP32Servo.h>
 
 #include "config.h"
 #include "web.h"
@@ -23,6 +24,12 @@
     Adapted by Manos Zeakis for ESP32 and TB6612FNG
 */
 
+Servo ESC; 
+#define MOTOR_PIN 13     // Pin attached to the ESC signal pin
+#define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
+#define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
+#define POT_PIN 4        // Pin attached to the potentiometer
+
 void setup()
 {
   Serial.begin(9600);
@@ -32,6 +39,15 @@ void setup()
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
   Serial.println(IP);
+
+  // Initialize ESC
+  ESC.attach(MOTOR_PIN, MIN_SIGNAL, MAX_SIGNAL);
+  ESC.writeMicroseconds(MIN_SIGNAL); // Start with the ESC at minimum signal
+  delay(2000); // Slight delay for stable initialization
+
+  ESC.writeMicroseconds(MAX_SIGNAL); // Calibrate to max if needed
+  delay(2000);
+  ESC.writeMicroseconds(MIN_SIGNAL); // Reset to min
 
   // HTTP handler assignment
   webserver.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -43,25 +59,37 @@ void setup()
   // start server
   webserver.begin();
   server.listen(82);
-  Serial.print("Is server live? ");
+  Serial.println("Server is live!");
   Serial.println(server.available());
  
 }
  
 // handle http messages
 void handle_message(WebsocketsMessage msg) {
-  commaIndex = msg.data().indexOf(',');
-  LValue = msg.data().substring(0, commaIndex).toInt();
-  RValue = msg.data().substring(commaIndex + 1).toInt();
-  motor1.drive(LValue);
-  motor2.drive(RValue);
+    if (msg.data().startsWith("POT:")) {
+        int sliderValue = msg.data().substring(4).toInt();
+        int ESCSignal = map(sliderValue, 0, 180, MIN_SIGNAL, MAX_SIGNAL);
+        ESC.writeMicroseconds(ESCSignal);
+    } else {
+        // Handle other WebSocket messages
+        commaIndex = msg.data().indexOf(',');
+        LValue = msg.data().substring(0, commaIndex).toInt();
+        RValue = msg.data().substring(commaIndex + 1).toInt();
+        motor1.drive(LValue);
+        motor2.drive(RValue);
+    }
 }
  
 void loop()
 {
   auto client = server.accept();
-  client.onMessage(handle_message);
-  while (client.available()) {
-    client.poll();
+  if (client.available()) {
+    auto msg = client.readBlocking();
+    handle_message(msg);
   }
+  // Potentiometer control for ESC
+  int potValue = analogRead(POT_PIN);
+  int CtrlPWM = map(potValue, 0, 4095, 0, 180);
+  int ESCSignal = CtrlPWM * 2000 / 180;  // Convert to PWM signal range
+  ESC.writeMicroseconds(ESCSignal);
 }
