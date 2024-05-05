@@ -1,4 +1,4 @@
-const char* ssid = "ESP32_ROBv1"; //Enter SSID
+const char* ssid = "ESP32_ROBv2"; //Enter SSID
 const char* password = "yourpasswd"; //Enter Password
 
 #define AIN1 13

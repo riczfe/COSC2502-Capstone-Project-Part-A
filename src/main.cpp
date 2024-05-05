@@ -30,39 +30,30 @@ Servo ESC;
 #define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
 #define POT_PIN 4        // Pin attached to the potentiometer
 
-void setup()
-{
-  Serial.begin(9600);
+void setup() {
+    Serial.begin(9600);
+    WiFi.softAP(ssid, password);
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP);
 
-  // Create AP
-  WiFi.softAP(ssid, password);
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
+    // Initialize ESC
+    ESC.attach(MOTOR_PIN, MIN_SIGNAL, MAX_SIGNAL);
+    ESC.writeMicroseconds(MIN_SIGNAL); // Start with the ESC at minimum signal
+    delay(2000); // Stable initialization
+    ESC.writeMicroseconds(MAX_SIGNAL); // Max calibration signal
+    delay(2000);
+    ESC.writeMicroseconds(MIN_SIGNAL); // Reset to min
 
-  // Initialize ESC
-  ESC.attach(MOTOR_PIN, MIN_SIGNAL, MAX_SIGNAL);
-  ESC.writeMicroseconds(MIN_SIGNAL);  // Start with the ESC at minimum signal
+    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
 
-  delay(2000); // Slight delay for stable initialization
-
-  ESC.writeMicroseconds(MAX_SIGNAL); // Calibrate to max if needed
-  delay(2000);
-  ESC.writeMicroseconds(MIN_SIGNAL); // Reset to min
-
-  // HTTP handler assignment
-  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  });
-
-  // start server
-  webserver.begin();
-  server.listen(82);
-  Serial.println("Server is live!");
-  Serial.println(server.available());
- 
+    webserver.begin();
+    server.listen(82);
+    Serial.println("Server is live!");
 }
  
 // handle http messages
@@ -72,7 +63,6 @@ void handle_message(WebsocketsMessage msg) {
         int ESCSignal = map(sliderValue, 0, 180, MIN_SIGNAL, MAX_SIGNAL);
         ESC.writeMicroseconds(ESCSignal);
     } else {
-        // Handle other WebSocket messages
         commaIndex = msg.data().indexOf(',');
         LValue = msg.data().substring(0, commaIndex).toInt();
         RValue = msg.data().substring(commaIndex + 1).toInt();
@@ -80,6 +70,7 @@ void handle_message(WebsocketsMessage msg) {
         motor2.drive(RValue);
     }
 }
+
  
 void loop()
 {
