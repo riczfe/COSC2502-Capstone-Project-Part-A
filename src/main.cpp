@@ -42,7 +42,8 @@ void setup()
 
   // Initialize ESC
   ESC.attach(MOTOR_PIN, MIN_SIGNAL, MAX_SIGNAL);
-  ESC.writeMicroseconds(MIN_SIGNAL); // Start with the ESC at minimum signal
+  ESC.writeMicroseconds(MIN_SIGNAL);  // Start with the ESC at minimum signal
+
   delay(2000); // Slight delay for stable initialization
 
   ESC.writeMicroseconds(MAX_SIGNAL); // Calibrate to max if needed
