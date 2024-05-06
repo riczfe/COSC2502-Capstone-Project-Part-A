@@ -42,17 +42,26 @@ void setup() {
 }
  
 void handle_message(WebsocketsMessage msg) {
+    Serial.println("Received message: " + msg.data()); // Log the entire message for debugging
+
     if (msg.data().startsWith("POT:")) {
         String valueString = msg.data().substring(4); // Get the numeric part of the message
         int sliderValue = valueString.toInt(); // Convert to integer
-        int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL); // Map the slider value to ESC signal range
-        ESC.writeMicroseconds(ESCSignal); // Send the mapped value as a PWM signal to the ESC
-        Serial.print("Slider Value: ");
-        Serial.print(sliderValue);
-        Serial.print(" - ESC Signal: ");
-        Serial.println(ESCSignal);
+        if (sliderValue == 0 && valueString != "0") {
+            Serial.println("Error converting to integer, received string: " + valueString);
+        } else {
+            int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL); // Map the slider value to ESC signal range
+            ESC.writeMicroseconds(ESCSignal); // Send the mapped value as a PWM signal to the ESC
+            Serial.print("Slider Value: ");
+            Serial.print(sliderValue);
+            Serial.print(" - ESC Signal: ");
+            Serial.println(ESCSignal);
+        }
+    } else {
+        Serial.println("Message does not start with 'POT:'");
     }
 }
+
 
 
 void loop() {

@@ -118,10 +118,11 @@
         const sliderValue = document.getElementById('sliderValue');
 
         slider.oninput = function() {
-            sliderValue.textContent = this.value + ' degrees';
-            // Send the current value of the slider to the ESP32
-            ws.send(`POT:${this.value}`);
+        sliderValue.textContent = this.value + ' degrees';
+        console.log(`Sending POT value: ${this.value}`);  // Add this to log the value being sent
+        ws.send(`POT:${this.value}`);
         };
+
 
         // Setup WebSocket connection
         const ws = new WebSocket(`ws://${window.location.hostname}:82`);
