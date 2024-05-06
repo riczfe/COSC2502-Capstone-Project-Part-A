@@ -62,6 +62,8 @@ void handle_message(WebsocketsMessage msg) {
         int sliderValue = msg.data().substring(4).toInt();
         int ESCSignal = map(sliderValue, 0, 180, MIN_SIGNAL, MAX_SIGNAL);
         ESC.writeMicroseconds(ESCSignal);
+        Serial.print("Slider Value: ");
+        Serial.println(sliderValue);
     } else {
         commaIndex = msg.data().indexOf(',');
         LValue = msg.data().substring(0, commaIndex).toInt();
@@ -70,6 +72,7 @@ void handle_message(WebsocketsMessage msg) {
         motor2.drive(RValue);
     }
 }
+
 
  
 void loop()
