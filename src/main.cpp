@@ -9,22 +9,7 @@
 #include "config.h"
 #include "web.h"
 
-/** ESP32 robot tank with wifi and one joystick web control sketch. 
-    Based on SMARS modular robot project using esp32 and tb6612.
-    https://www.thingiverse.com/thing:2662828
-
-    for complete complete program: https://github.com/nkmakes/SMARS-esp32
-
-    Made by nkmakes.github.io, August 2020.
-
-    -----------------------------------------
-    Camera stream based upon:
-    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
-    Ported to Arduino ESP32 by Evandro Copercini
-    Adapted by Manos Zeakis for ESP32 and TB6612FNG
-*/
-
-Servo ESC; 
+Servo ESC;
 #define MOTOR_PIN 13     // Pin attached to the ESC signal pin
 #define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
 #define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
@@ -63,7 +48,9 @@ void handle_message(WebsocketsMessage msg) {
         int ESCSignal = map(sliderValue, 0, 180, MIN_SIGNAL, MAX_SIGNAL);
         ESC.writeMicroseconds(ESCSignal);
         Serial.print("Slider Value: ");
-        Serial.println(sliderValue);
+        Serial.print(sliderValue);
+        Serial.print(" - ESC Signal: ");
+        Serial.println(ESCSignal);
     } else {
         commaIndex = msg.data().indexOf(',');
         LValue = msg.data().substring(0, commaIndex).toInt();
@@ -73,18 +60,20 @@ void handle_message(WebsocketsMessage msg) {
     }
 }
 
-
- 
-void loop()
-{
-  auto client = server.accept();
-  if (client.available()) {
-    auto msg = client.readBlocking();
-    handle_message(msg);
-  }
-  // Potentiometer control for ESC
-  int potValue = analogRead(POT_PIN);
-  int CtrlPWM = map(potValue, 0, 4095, 0, 180);
-  int ESCSignal = CtrlPWM * 2000 / 180;  // Convert to PWM signal range
-  ESC.writeMicroseconds(ESCSignal);
+void loop() {
+    auto client = server.accept();
+    if (client.available()) {
+        auto msg = client.readBlocking();
+        handle_message(msg);
+    }
+    // Potentiometer control for ESC
+    int potValue = analogRead(POT_PIN);  // Read the potentiometer value
+    int CtrlPWM = map(potValue, 0, 4095, 0, 180);  // Convert to a range suitable for ESC
+    int ESCSignal = map(CtrlPWM, 0, 180, MIN_SIGNAL, MAX_SIGNAL);  // Convert to PWM signal range
+    ESC.writeMicroseconds(ESCSignal);  // Send the signal to the ESC
+    Serial.print("Potentiometer Value: ");
+    Serial.print(potValue);
+    Serial.print(" - ESC Signal: ");
+    Serial.println(ESCSignal);
+    delay(100);  // Short delay for stability and readability
 }
