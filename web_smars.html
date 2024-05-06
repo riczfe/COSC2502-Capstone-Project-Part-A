@@ -114,19 +114,27 @@
     </div>
 
     <script>
-        const ws = new WebSocket(`ws://${window.location.hostname}:82`);
         const slider = document.getElementById('escSlider');
-        const sliderValueText = document.getElementById('sliderValue');
-    
+        const sliderValue = document.getElementById('sliderValue');
         slider.oninput = function() {
-            sliderValueText.textContent = this.value + ' degrees';  // Update display text
-            ws.send(`POT:${this.value}`);  // Send the current value of the slider to the ESP32
+            sliderValue.textContent = this.value + ' degrees';
+            // Send the current value of the slider to the ESP32
+            ws.send(`POT:${this.value}`);
         };
     
+        // Setup WebSocket connection
+        const ws = new WebSocket(`ws://${window.location.hostname}:82`);
         ws.onopen = function() {
             console.log('WebSocket connection established');
         };
-    </script>    
+        ws.onerror = function() {
+            console.log('WebSocket error');
+        };
+        ws.onmessage = function(event) {
+            console.log('Message from server ', event.data);
+        };
+    </script>
+       
 
 </body>
 
