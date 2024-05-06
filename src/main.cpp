@@ -13,7 +13,7 @@ Servo ESC;
 #define MOTOR_PIN 13     // Pin attached to the ESC signal pin
 #define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
 #define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
-#define POT_PIN 4        // Pin attached to the potentiometer
+#define POT_PIN 32  // ADC1 Channel
 
 void setup() {
     Serial.begin(9600);
@@ -42,27 +42,21 @@ void setup() {
 }
  
 void handle_message(WebsocketsMessage msg) {
-    Serial.println("Received message: " + msg.data()); // Log the entire message for debugging
+    Serial.print("Received message: ");
+    Serial.println(msg.data());
 
     if (msg.data().startsWith("POT:")) {
-        String valueString = msg.data().substring(4); // Get the numeric part of the message
-        int sliderValue = valueString.toInt(); // Convert to integer
-        if (sliderValue == 0 && valueString != "0") {
-            Serial.println("Error converting to integer, received string: " + valueString);
-        } else {
-            int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL); // Map the slider value to ESC signal range
-            ESC.writeMicroseconds(ESCSignal); // Send the mapped value as a PWM signal to the ESC
-            Serial.print("Slider Value: ");
-            Serial.print(sliderValue);
-            Serial.print(" - ESC Signal: ");
-            Serial.println(ESCSignal);
-        }
+        int sliderValue = msg.data().substring(4).toInt();
+        int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL);
+        ESC.writeMicroseconds(ESCSignal);
+        Serial.print("Slider Value: ");
+        Serial.print(sliderValue);
+        Serial.print(" - ESC Signal: ");
+        Serial.println(ESCSignal);
     } else {
         Serial.println("Message does not start with 'POT:'");
     }
 }
-
-
 
 void loop() {
     auto client = server.accept();
@@ -70,14 +64,12 @@ void loop() {
         auto msg = client.readBlocking();
         handle_message(msg);
     }
-    // Potentiometer control for ESC
-    int potValue = analogRead(POT_PIN);  // Read the potentiometer value
-    int CtrlPWM = map(potValue, 0, 4095, 0, 180);  // Convert to a range suitable for ESC
-    int ESCSignal = map(CtrlPWM, 0, 180, MIN_SIGNAL, MAX_SIGNAL);  // Convert to PWM signal range
-    ESC.writeMicroseconds(ESCSignal);  // Send the signal to the ESC
+    int potValue = analogRead(POT_PIN);
+    int ESCSignal = map(potValue, 0, 4095, MIN_SIGNAL, MAX_SIGNAL);
+    ESC.writeMicroseconds(ESCSignal);
     Serial.print("Potentiometer Value: ");
     Serial.print(potValue);
     Serial.print(" - ESC Signal: ");
     Serial.println(ESCSignal);
-    delay(100);  // Short delay for stability and readability
+    delay(100);
 }

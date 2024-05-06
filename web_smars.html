@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
 
 
-    <title>Joystick test</title>
+    <title>DRONE IMPLEMENTATION test</title>
 
 
     <style>
@@ -118,26 +118,17 @@
         const sliderValue = document.getElementById('sliderValue');
 
         slider.oninput = function() {
-        sliderValue.textContent = this.value + ' degrees';
-        console.log(`Sending POT value: ${this.value}`);  // Add this to log the value being sent
-        ws.send(`POT:${this.value}`);
+            sliderValue.textContent = this.value + ' degrees';
+            console.log(`Sending POT value: ${this.value}`);
+            ws.send(`POT:${this.value}`);
         };
 
-
-        // Setup WebSocket connection
         const ws = new WebSocket(`ws://${window.location.hostname}:82`);
-        
         ws.onopen = function() {
             console.log('WebSocket connection established');
         };
-        
-        ws.onerror = function(error) {
-            console.log('WebSocket Error: ', error);
-        };
-
         ws.onmessage = function(event) {
-            console.log('Message from server: ', event.data);
-            // Handle any messages received from the server here
+            console.log('Message from server:', event.data);
         };
     </script>
 </body>
