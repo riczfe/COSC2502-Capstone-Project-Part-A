@@ -114,16 +114,19 @@
     </div>
 
     <script>
-        const ws = new WebSocket('ws://' + window.location.hostname + ':82');
-        ws.onopen = function () {
+        const ws = new WebSocket(`ws://${window.location.hostname}:82`);
+        const slider = document.getElementById('escSlider');
+        const sliderValueText = document.getElementById('sliderValue');
+    
+        slider.oninput = function() {
+            sliderValueText.textContent = this.value + ' degrees';  // Update display text
+            ws.send(`POT:${this.value}`);  // Send the current value of the slider to the ESP32
+        };
+    
+        ws.onopen = function() {
             console.log('WebSocket connection established');
         };
-
-        function updateSlider(value) {
-            document.getElementById('sliderValue').textContent = value;
-            ws.send(`POT:${value}`); // Send slider value as a potentiometer setting to the ESP32
-        }
-    </script> 
+    </script>    
 
 </body>
 

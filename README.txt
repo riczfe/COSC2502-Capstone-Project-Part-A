@@ -1,6 +1,6 @@
 # Step 1: Update and Compress HTML File
 
-`gzip -c web_smars.html > web_smars.html.gz`
+gzip -c web_smars.html > web_smars.html.gz
 
 
 # Step 2: Convert Gzip File to C Byte Array (`convert_to_c_array.py`)
@@ -20,6 +20,7 @@ def file_to_c_array(file_path, array_name):
 file_to_c_array('web_smars.html.gz', 'index_html_gz')
 ```
 
-COPY CONTENT FROM `python3 convert_to_c_array.py`
+COPY CONTENT FROM 
+python3 convert_to_c_array.py
 
 Step 3: Update the web.h File
