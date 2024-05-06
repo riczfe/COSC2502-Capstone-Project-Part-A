@@ -108,34 +108,37 @@
     </script>
 
     <div id="escControl">
-        <label for="escSlider">ESC Control:</label>
-        <input type="range" id="escSlider" min="0" max="300" value="150" oninput="updateSlider(this.value)">
+        <label for="escSlider">Adjust ESC:</label>
+        <input type="range" id="escSlider" min="0" max="300" value="150">
         <span id="sliderValue">150</span> degrees
     </div>
 
     <script>
         const slider = document.getElementById('escSlider');
         const sliderValue = document.getElementById('sliderValue');
+
         slider.oninput = function() {
             sliderValue.textContent = this.value + ' degrees';
             // Send the current value of the slider to the ESP32
             ws.send(`POT:${this.value}`);
         };
-    
+
         // Setup WebSocket connection
         const ws = new WebSocket(`ws://${window.location.hostname}:82`);
+        
         ws.onopen = function() {
             console.log('WebSocket connection established');
         };
-        ws.onerror = function() {
-            console.log('WebSocket error');
+        
+        ws.onerror = function(error) {
+            console.log('WebSocket Error: ', error);
         };
+
         ws.onmessage = function(event) {
-            console.log('Message from server ', event.data);
+            console.log('Message from server: ', event.data);
+            // Handle any messages received from the server here
         };
     </script>
-       
-
 </body>
 
 <script type="text/javascript">

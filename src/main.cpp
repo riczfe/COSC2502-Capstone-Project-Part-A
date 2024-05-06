@@ -41,17 +41,12 @@ void setup() {
     Serial.println("Server is live!");
 }
  
-// handle http messages
 void handle_message(WebsocketsMessage msg) {
-    // Check if the message starts with "POT:"
     if (msg.data().startsWith("POT:")) {
-        // Extract the numeric value after "POT:"
-        int sliderValue = msg.data().substring(4).toInt(); // Converts string to integer
-        // Map the slider value to ESC signal range
-        int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL);
-        // Write the mapped value as a PWM signal to the ESC
-        ESC.writeMicroseconds(ESCSignal);
-        // Print the received and calculated values to the Serial console
+        String valueString = msg.data().substring(4); // Get the numeric part of the message
+        int sliderValue = valueString.toInt(); // Convert to integer
+        int ESCSignal = map(sliderValue, 0, 300, MIN_SIGNAL, MAX_SIGNAL); // Map the slider value to ESC signal range
+        ESC.writeMicroseconds(ESCSignal); // Send the mapped value as a PWM signal to the ESC
         Serial.print("Slider Value: ");
         Serial.print(sliderValue);
         Serial.print(" - ESC Signal: ");

@@ -31,11 +31,6 @@ print(file_to_c_array('$HTML_PATH/$GZ_FILE'))
 # Step 3: Update the web.h file with the new array
 echo "Updating web.h file..."
 cat > $WEB_H_FILE <<EOF
-#ifndef WEB_H
-#define WEB_H
-
-#include <stdint.h>
-
 const uint8_t index_html_gz[] = {
 $ARRAY_CONTENT
 };
