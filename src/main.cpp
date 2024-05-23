@@ -1,4 +1,9 @@
 #include <Arduino.h>       // Arduino library
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoWebsockets.h>
+#include "config.h"
+#include "web.h"
 #include "MyMPU.h"         // Personal library to configure the MPU6050
 #include "MySerial.h"      // Personal library to configure the serial communication
 #include "MyMotorConfig.h" // Personal library to configure the motor
@@ -37,12 +42,43 @@ void SerialDataWrite(); // Data from the PC to the microcontroller
 // ================================================================
 void setup()
 {
+  Serial.begin(115200);
   Init_Serial();   // Initialize the serial communication
   Init_MotorPin(); // Initialize the motor pin
   Init_ESC();                 // Initialize the ESC
   Init_MPU();      // Initialize the MPU
   Init_PID();      // Initialize the PID
   espnow_initialize(); //Initialise the RECEIVER
+
+  WiFi.softAP(ssid, password);
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
+
+  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
+
+  webserver.begin();
+  server.listen(82);
+  Serial.print("Is server live? ");
+  Serial.println(server.available());
+}
+
+void handle_message(WebsocketsMessage msg) {
+  commaIndex = msg.data().indexOf(',');
+  LValue = msg.data().substring(0, commaIndex).toInt();
+  RValue = msg.data().substring(commaIndex + 1).toInt();
+  motor1.drive(LValue);
+  motor2.drive(RValue);
+
+  CtrlPWM = map(LValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL); // Use slider value to control ESC
+  ESC1.writeMicroseconds(CtrlPWM);
+  ESC2.writeMicroseconds(CtrlPWM);
+  ESC3.writeMicroseconds(CtrlPWM);
+  ESC4.writeMicroseconds(CtrlPWM);
 }
 // ================================================================
 // Loop function
@@ -69,12 +105,16 @@ void loop()
     ESC4.write(CtrlPWM);
 
   }
-
+  
+  auto client = server.accept();
+  client.onMessage(handle_message);
+  while (client.available()) {
+    client.poll();
+  }
 
   //   SerialDataWrite(); // User data to tune the PID parameters
   SerialDataPrint(); 
   espnow_loop();
-  
 }
 
 
