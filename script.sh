@@ -10,6 +10,11 @@ GZ_FILE="web_smars.html.gz"
 WEB_H_FILE="$SRC_PATH/web.h"
 
 # Step 1: Compress the HTML file
+if [ -f $HTML_PATH/$GZ_FILE ]; then
+  echo "Removing existing $GZ_FILE..."
+  rm $HTML_PATH/$GZ_FILE
+fi
+
 echo "Compressing $HTML_FILE..."
 gzip -c $HTML_PATH/$HTML_FILE > $HTML_PATH/$GZ_FILE
 
