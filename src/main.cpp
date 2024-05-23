@@ -15,8 +15,6 @@ Servo ESC2;
 Servo ESC3;
 Servo ESC4;                      // Define the ESC
 int CtrlPWM;                    // Control Signal for ESC (0 - 180 range)
-float Pot_Voltage;                  // Actual PWM signal sent to the ESC
-int Pot_Angle;                   // Potentiometer angle in degrees
 
 
 void Init_ESC();                // Function to init the ESC
@@ -48,31 +46,31 @@ void setup()
 // ================================================================
 void loop()
 {
-  if (Fall_Dectect == 0) {
-    CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 0, 180); // Read the pot, map the reading from [0, 4095] to [0, 180]
-    Pot_Angle = CtrlPWM * 300 / 180;
-    Pot_Voltage = CtrlPWM * 3.3 / 180; 
+
+  CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 1000, 2000); // Read the pot, map the reading from [0, 4095] to [0, 180]
+  
+  // Get data from MPU6050
+  Get_MPUangle();
+  Get_accelgyro();
+  // Apply tunning
+  Compute_PID();     // Compute the PID output for x and y angle
+
+  if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
+    ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
+    ESC4.write(CtrlPWM + motor_cmd_x);  
+    ESC2.write(CtrlPWM + motor_cmd_y);
+  }else{
     ESC1.write(CtrlPWM);
-    ESC2.write(CtrlPWM); 
+    ESC2.write(CtrlPWM);
     ESC3.write(CtrlPWM);
     ESC4.write(CtrlPWM);
-    // Get data from MPU6050
-    Get_MPUangle();
-    Get_accelgyro();
-    // Apply tunning
-    Compute_PID();     // Compute the PID output for x and y angle
-    ESC1.write(motor_cmd_x);
-    ESC2.write(motor_cmd_x);
 
-
-    //   SerialDataWrite(); // User data to tune the PID parameters
-    SerialDataPrint(); 
-  }else if (Fall_Dectect == 1) {
-    ledcWrite(PWM_CHA_AIN1, 0);
-    ledcWrite(PWM_CHA_BIN1, 0);
-    ledcWrite(PWM_CHA_CIN1, 0);
-    ledcWrite(PWM_CHA_DIN1, 0);
   }
+
+
+  //   SerialDataWrite(); // User data to tune the PID parameters
+  SerialDataPrint(); 
+
   
 }
 
@@ -137,10 +135,6 @@ void SerialDataPrint()
         Serial.print("\n");
         Serial.print("Time(ms): ");
         Serial.print(time_prev);
-        Serial.print("  Pot Angle: ");
-        Serial.print(Pot_Angle);
-        Serial.print("  Pot Voltage: ");
-        Serial.print(Pot_Voltage);
         Serial.print("   ESC Signal: ");
         Serial.print(CtrlPWM);
         Serial.print("\t");

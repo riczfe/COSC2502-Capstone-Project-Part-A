@@ -14,10 +14,10 @@ extern double angley;
 // setpoint = reference setpoint, the desired angle (usually 0deg to maintain an upward position)
 // PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 
-double pid_output_x = 0, motor_cmd_x = 127, motor_cmd_y = 127;
-double pid_output_y = 0;
+double pid_output_x = 0, pid_output_y = 0, motor_cmd_x = 127, motor_cmd_y = 127;
+
 // Init gain
-double kp = 12.0, ki = 100.0, kd = 0.15, anglex_setpoint = 0, angley_setpoint = 0;
+double kp = 10.0, ki = 0.0, kd = 0.15, anglex_setpoint = 0, angley_setpoint = 0;
 // Correct gain 
 // double kp = 12.0, ki = 100.0, kd = 0.15, anglex_setpoint = 1;
 
@@ -32,6 +32,11 @@ void Init_PID()
   myPIDforX.SetMode(AUTOMATIC);
   myPIDforX.SetOutputLimits(-127, 127);
   myPIDforX.SetSampleTime(10);
+
+  myPIDforY.SetMode(AUTOMATIC);
+  myPIDforY.SetOutputLimits(-127, 127);
+  myPIDforY.SetSampleTime(10);
+
 }
 // ================================================================
 void Compute_PID()
@@ -43,7 +48,8 @@ void Compute_PID()
   //   pid_output = 0; // motor stop when fall
   //   Fall_Dectect = 1;
   // }
-  motor_cmd_x = map(pid_output_x, -127, 127, 0, 255); 
+  motor_cmd_x = map(pid_output_x, -127, 127, -100, 100); 
+
 
   // Y angle tunning
   myPIDforY.SetTunings(kp, ki, kd);
@@ -52,6 +58,7 @@ void Compute_PID()
   //   pid_output = 0; // motor stop when fall
   //   Fall_Dectect = 1;
   // }
-  motor_cmd_y = map(pid_output_x, -127, 127, 0, 255);
+  motor_cmd_y = map(pid_output_y, -127, 127, -100, 100);
+ 
 }
 // ================================================================

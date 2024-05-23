@@ -69,6 +69,7 @@
 //   CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 0, 180); // Read the pot, map the reading from [0, 4095] to [0, 180]
 //   ESC1.write(CtrlPWM);                                  // Send the command to the ESC
 //   ESC2.write(CtrlPWM);
+//   ESC3.write(CtrlPWM);
 //   SerialDataPrint();                                   // Print data on the serial monitor for debugging
 // }
 // // ================================================================
