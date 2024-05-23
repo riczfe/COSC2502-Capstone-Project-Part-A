@@ -3,8 +3,8 @@
 
 #include <TB6612_ESP32.h>  // Include the library for the Motor class
 
-const char* ssid = "ESP32_ROBv1"; // Enter SSID
-const char* password = "yourpasswd"; // Enter Password
+const char* ssid = "ESP32_RBreakers"; // Enter SSID
+const char* password = "123456"; // Enter Password
 
 #define AIN1 13
 #define BIN1 12
