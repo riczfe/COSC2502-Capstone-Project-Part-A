@@ -3,6 +3,7 @@
 #include "MySerial.h"      // Personal library to configure the serial communication
 #include "MyMotorConfig.h" // Personal library to configure the motor
 #include "MyPID.h"         // Personnal library to configure the PID
+#include "EspNowCommunication.h"  // Personnal library to configure the RECEIVER
 #include <ESP32Servo.h>
 
 
@@ -14,6 +15,7 @@ Servo ESC1;
 Servo ESC2;
 Servo ESC3;
 Servo ESC4;                      // Define the ESC
+
 int CtrlPWM;                    // Control Signal for ESC (0 - 180 range)
 
 
@@ -40,6 +42,7 @@ void setup()
   Init_ESC();                 // Initialize the ESC
   Init_MPU();      // Initialize the MPU
   Init_PID();      // Initialize the PID
+  espnow_initialize(); //Initialise the RECEIVER
 }
 // ================================================================
 // Loop function
@@ -70,7 +73,7 @@ void loop()
 
   //   SerialDataWrite(); // User data to tune the PID parameters
   SerialDataPrint(); 
-
+  espnow_loop();
   
 }
 
@@ -120,8 +123,7 @@ void Init_ESC() {
 
 void WaitForKeyStroke()
 {
-  while (!Serial.available())
-    ;
+  while (!Serial.available());
   while (Serial.available())
     Serial.read();
 }
