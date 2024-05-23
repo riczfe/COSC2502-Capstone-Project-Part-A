@@ -17,7 +17,6 @@
 
 extern double motor_cmd_x, motor_cmd_y; 
 int PWM_A = 127, PWM_B = 127, PWM_C = 127, PWM_D = 127;
-int LValue, RValue, commaIndex;
 
 void Init_MotorPin()
 {
