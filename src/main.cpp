@@ -94,21 +94,17 @@ void loop()
   // Apply tunning
   Compute_PID();     // Compute the PID output for x and y angle
 
-  // if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
-  //   ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
-  //   ESC4.write(CtrlPWM + motor_cmd_x);  
-  //   ESC2.write(CtrlPWM + motor_cmd_y);
-  // }else{
-  //   ESC1.write(CtrlPWM);
-  //   ESC2.write(CtrlPWM);
-  //   ESC3.write(CtrlPWM);
-  //   ESC4.write(CtrlPWM);
+  if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
+    ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
+    ESC4.write(CtrlPWM + motor_cmd_x);  
+    ESC2.write(CtrlPWM + motor_cmd_y);
+  }else{
+    ESC1.write(CtrlPWM);
+    ESC2.write(CtrlPWM);
+    ESC3.write(CtrlPWM);
+    ESC4.write(CtrlPWM);
+  }
 
-  // }
-  ESC1.write(CtrlPWM);
-  ESC2.write(CtrlPWM);
-  ESC3.write(CtrlPWM);
-  ESC4.write(CtrlPWM);
   
   auto client = server.accept();
   client.onMessage(handle_message);
@@ -116,7 +112,7 @@ void loop()
     client.poll();
   }
 
-  //   SerialDataWrite(); // User data to tune the PID parameters
+  SerialDataWrite(); // User data to tune the PID parameters
   SerialDataPrint(); 
   espnow_loop();
 }
