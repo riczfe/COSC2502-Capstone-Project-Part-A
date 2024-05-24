@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
-#define MOT_AIN1 25
-#define MOT_BIN1 26
-#define MOT_CIN1 33
-#define MOT_DIN1 27
+#define MOT_AIN1 14
+#define MOT_BIN1 27
+#define MOT_CIN1 26
+#define MOT_DIN1 25
 
 
 #define PWM_CHA_AIN1 0
