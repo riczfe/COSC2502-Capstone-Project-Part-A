@@ -84,34 +84,35 @@ void handle_message(WebsocketsMessage msg) {
 // ================================================================
 void loop()
 {
-
   CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 1000, 2000); // Read the pot, map the reading from [0, 4095] to [0, 180]
   // Get data from MPU6050
   Get_MPUangle();
   Get_accelgyro();
   // Apply tunning
   Compute_PID();     // Compute the PID output for x and y angle
-
-  if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
-    ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
-    ESC4.write(CtrlPWM + motor_cmd_x);  
-    ESC2.write(CtrlPWM + motor_cmd_y);
-  }else{
-    ESC1.write(CtrlPWM);
-    ESC2.write(CtrlPWM);
-    ESC3.write(CtrlPWM);
-    ESC4.write(CtrlPWM);
-  }
-
   
   auto client = server.accept();
   client.onMessage(handle_message);
   while (client.available()) {
+    if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
+      ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
+      ESC4.write(CtrlPWM + motor_cmd_x);  
+      ESC2.write(CtrlPWM + motor_cmd_y);
+    }else{
+      ESC1.write(CtrlPWM);
+      ESC2.write(CtrlPWM);
+      ESC3.write(CtrlPWM);
+      ESC4.write(CtrlPWM);
+    }
     client.poll();
+    Get_MPUangle();
+    Get_accelgyro();
+    // Apply tunning
+    Compute_PID();     // Compute the PID output for x and y angle
+    SerialDataPrint();
   }
 
   // SerialDataWrite(); // User data to tune the PID parameters
-  SerialDataPrint();
 }
 
 
