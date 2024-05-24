@@ -1,15 +1,19 @@
 #include <Arduino.h>       // Arduino library
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoWebsockets.h>
+#include "config.h"
+#include "web.h"
 #include "MyMPU.h"         // Personal library to configure the MPU6050
 #include "MySerial.h"      // Personal library to configure the serial communication
 #include "MyMotorConfig.h" // Personal library to configure the motor
 #include "MyPID.h"         // Personnal library to configure the PID
-#include "EspNowCommunication.h"  // Personnal library to configure the RECEIVER
 #include <ESP32Servo.h>
 
 
 #define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
 #define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
-#define POT_PIN 4        // Pin attached to the potentiometer
+#define POT_PIN 36        // Pin attached to the potentiometer
 
 Servo ESC1;
 Servo ESC2;
@@ -37,44 +41,78 @@ void SerialDataWrite(); // Data from the PC to the microcontroller
 // ================================================================
 void setup()
 {
+  Serial.begin(115200);
   Init_Serial();   // Initialize the serial communication
   Init_MotorPin(); // Initialize the motor pin
   Init_ESC();                 // Initialize the ESC
   Init_MPU();      // Initialize the MPU
   Init_PID();      // Initialize the PID
-  espnow_initialize(); //Initialise the RECEIVER
+  SerialDataPrint();
+
+  WiFi.softAP(ssid, password);
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
+
+  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
+
+  webserver.begin();
+  server.listen(82);
+  Serial.print("Is server live? ");
+  Serial.println(server.available());
+}
+
+void handle_message(WebsocketsMessage msg) {
+  commaIndex = msg.data().indexOf(',');
+  LValue = msg.data().substring(0, commaIndex).toInt();
+  RValue = msg.data().substring(commaIndex + 1).toInt();
+  motor1.drive(LValue);
+  motor2.drive(RValue);
+
+  CtrlPWM = map(LValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL); // Use slider value to control ESC
+  ESC1.writeMicroseconds(CtrlPWM);
+  ESC2.writeMicroseconds(CtrlPWM);
+  ESC3.writeMicroseconds(CtrlPWM);
+  ESC4.writeMicroseconds(CtrlPWM);
 }
 // ================================================================
 // Loop function
 // ================================================================
 void loop()
 {
-
   CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 1000, 2000); // Read the pot, map the reading from [0, 4095] to [0, 180]
-  
   // Get data from MPU6050
   Get_MPUangle();
   Get_accelgyro();
   // Apply tunning
   Compute_PID();     // Compute the PID output for x and y angle
-
-  if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
-    ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
-    ESC4.write(CtrlPWM + motor_cmd_x);  
-    ESC2.write(CtrlPWM + motor_cmd_y);
-  }else{
-    ESC1.write(CtrlPWM);
-    ESC2.write(CtrlPWM);
-    ESC3.write(CtrlPWM);
-    ESC4.write(CtrlPWM);
-
+  
+  auto client = server.accept();
+  client.onMessage(handle_message);
+  while (client.available()) {
+    if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
+      ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
+      ESC4.write(CtrlPWM + motor_cmd_x);  
+      ESC2.write(CtrlPWM + motor_cmd_y);
+    }else{
+      ESC1.write(CtrlPWM);
+      ESC2.write(CtrlPWM);
+      ESC3.write(CtrlPWM);
+      ESC4.write(CtrlPWM);
+    }
+    client.poll();
+    Get_MPUangle();
+    Get_accelgyro();
+    // Apply tunning
+    Compute_PID();     // Compute the PID output for x and y angle
+    SerialDataPrint();
   }
 
-
-  //   SerialDataWrite(); // User data to tune the PID parameters
-  SerialDataPrint(); 
-  espnow_loop();
-  
+  // SerialDataWrite(); // User data to tune the PID parameters
 }
 
 
@@ -97,7 +135,7 @@ void Init_ESC() {
     Serial.println();
     Serial.println("Calibration step 1. Disconnect the battery.");
     Serial.println("Press any key to continue.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
     ESC1.writeMicroseconds(MAX_SIGNAL); // Sending MAX_SIGNAL tells the ESC to enter calibration mode
     ESC2.writeMicroseconds(MAX_SIGNAL);
     ESC3.writeMicroseconds(MAX_SIGNAL);
@@ -108,7 +146,7 @@ void Init_ESC() {
     Serial.println("Calibration step 2. Connect the battery.");
     Serial.println("Wait for two short bips.");
     Serial.println("Press any key to continue.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
 
     ESC1.writeMicroseconds(MIN_SIGNAL); // Sending MIN_SIGNAL tells the ESC the calibration value
     ESC2.writeMicroseconds(MIN_SIGNAL); 
@@ -117,7 +155,7 @@ void Init_ESC() {
     Serial.println();
     Serial.println("Wait for 4 short bips, and one long bip.");
     Serial.println("Press any key to finish.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
 }
 
 
@@ -155,9 +193,6 @@ void SerialDataPrint()
         Serial.print(motor_cmd_x);
         Serial.print("\t");
         Serial.print(motor_cmd_y);
-
-
-
     }
 
     // time_prev = micros();

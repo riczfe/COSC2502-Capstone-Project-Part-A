@@ -1,10 +1,9 @@
 #include <Arduino.h>
 
-#define MOT_AIN1 25
-#define MOT_BIN1 26
-#define MOT_CIN1 33
-#define MOT_DIN1 27
-
+#define MOT_AIN1 14
+#define MOT_BIN1 27
+#define MOT_CIN1 26
+#define MOT_DIN1 25
 
 #define PWM_CHA_AIN1 0
 #define PWM_CHA_BIN1 2
@@ -17,7 +16,7 @@
 
 extern double motor_cmd_x, motor_cmd_y; 
 int PWM_A = 127, PWM_B = 127, PWM_C = 127, PWM_D = 127;
-int LValue, RValue, commaIndex;
+// int LValue, RValue, commaIndex;
 
 void Init_MotorPin()
 {
