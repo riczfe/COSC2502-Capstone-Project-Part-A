@@ -137,7 +137,7 @@ void Init_ESC() {
     Serial.println();
     Serial.println("Calibration step 1. Disconnect the battery.");
     Serial.println("Press any key to continue.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
     ESC1.writeMicroseconds(MAX_SIGNAL); // Sending MAX_SIGNAL tells the ESC to enter calibration mode
     ESC2.writeMicroseconds(MAX_SIGNAL);
     ESC3.writeMicroseconds(MAX_SIGNAL);
@@ -148,7 +148,7 @@ void Init_ESC() {
     Serial.println("Calibration step 2. Connect the battery.");
     Serial.println("Wait for two short bips.");
     Serial.println("Press any key to continue.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
 
     ESC1.writeMicroseconds(MIN_SIGNAL); // Sending MIN_SIGNAL tells the ESC the calibration value
     ESC2.writeMicroseconds(MIN_SIGNAL); 
@@ -157,7 +157,7 @@ void Init_ESC() {
     Serial.println();
     Serial.println("Wait for 4 short bips, and one long bip.");
     Serial.println("Press any key to finish.");
-    WaitForKeyStroke();
+    // WaitForKeyStroke();
 }
 
 
