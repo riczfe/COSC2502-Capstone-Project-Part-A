@@ -5,7 +5,6 @@
 #define MOT_CIN1 26
 #define MOT_DIN1 25
 
-
 #define PWM_CHA_AIN1 0
 #define PWM_CHA_BIN1 2
 #define PWM_CHA_CIN1 4
@@ -17,6 +16,7 @@
 
 extern double motor_cmd_x, motor_cmd_y; 
 int PWM_A = 127, PWM_B = 127, PWM_C = 127, PWM_D = 127;
+// int LValue, RValue, commaIndex;
 
 void Init_MotorPin()
 {

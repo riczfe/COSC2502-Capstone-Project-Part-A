@@ -8,7 +8,6 @@
 #include "MySerial.h"      // Personal library to configure the serial communication
 #include "MyMotorConfig.h" // Personal library to configure the motor
 #include "MyPID.h"         // Personnal library to configure the PID
-#include "EspNowCommunication.h"  // Personnal library to configure the RECEIVER
 #include <ESP32Servo.h>
 
 
@@ -48,6 +47,7 @@ void setup()
   Init_ESC();                 // Initialize the ESC
   Init_MPU();      // Initialize the MPU
   Init_PID();      // Initialize the PID
+  SerialDataPrint();
 
   WiFi.softAP(ssid, password);
   IPAddress IP = WiFi.softAPIP();
@@ -86,7 +86,6 @@ void loop()
 {
 
   CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 1000, 2000); // Read the pot, map the reading from [0, 4095] to [0, 180]
-  
   // Get data from MPU6050
   Get_MPUangle();
   Get_accelgyro();
@@ -111,8 +110,8 @@ void loop()
     client.poll();
   }
 
-  SerialDataWrite(); // User data to tune the PID parameters
-  SerialDataPrint(); 
+  // SerialDataWrite(); // User data to tune the PID parameters
+  SerialDataPrint();
 }
 
 
@@ -193,9 +192,6 @@ void SerialDataPrint()
         Serial.print(motor_cmd_x);
         Serial.print("\t");
         Serial.print(motor_cmd_y);
-
-
-
     }
 
     // time_prev = micros();
