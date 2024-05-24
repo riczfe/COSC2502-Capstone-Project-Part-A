@@ -14,7 +14,7 @@
 
 #define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
 #define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
-#define POT_PIN 4        // Pin attached to the potentiometer
+#define POT_PIN 36        // Pin attached to the potentiometer
 
 Servo ESC1;
 Servo ESC2;
