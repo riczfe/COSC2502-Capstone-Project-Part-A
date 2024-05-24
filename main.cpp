@@ -1,125 +1,241 @@
 #include <Arduino.h>
-/*
-    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
-    Ported to Arduino ESP32 by Evandro Copercini
-    Adapted by Manos Zeakis for ESP32 and TB6612FNG
-*/
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoWebsockets.h>
+#include "config.h"
+#include "web.h"
+#include "MyMPU.h"         // Personal library to configure the MPU6050
+#include "MySerial.h"      // Personal library to configure the serial communication
+#include "MyMotorConfig.h" // Personal library to configure the motor
+#include "MyPID.h"         // Personnal library to configure the PID
+#include <ESP32Servo.h>
 
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
-#include <TB6612_ESP32.h>
+#define MAX_SIGNAL 2000  // Maximum PWM signal for ESC
+#define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
+#define POT_PIN 36       // Pin attached to the potentiometer
 
-#define AIN1 13
-#define BIN1 12
-#define AIN2 14
-#define BIN2 27
-#define PWMA 26
-#define PWMB 25
-#define STBY 17
+Servo ESC1;
+Servo ESC2;
+Servo ESC3;
+Servo ESC4;                      // Define the ESC
 
-const int offsetA = 1;
-const int offsetB = -1;
+int CtrlPWM;                    // Control Signal for ESC (0 - 180 range)
 
-Motor motor1 = Motor(AIN1, AIN2, PWMA, offsetA, STBY,5000 ,8,1 );
-Motor motor2 = Motor(BIN1, BIN2, PWMB, offsetB, STBY,5000 ,8,2 );
+void Init_ESC();                // Function to init the ESC
+void WaitForKeyStroke(); // Function to interact with the serial monitor
 
-BLECharacteristic *pCharacteristic;
-bool deviceConnected = false;
+void emergencyStop(); // Emergency stop function
 
-#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
-#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      deviceConnected = true;
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      deviceConnected = false;
-    }
-};
-
-class MyCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pCharacteristic) {
-      std::string rxValue = pCharacteristic->getValue();
-
-      if (rxValue.length() > 0) {
-        Serial.println("*********");
-        Serial.print("Received Value: ");
-
-        for (int i = 0; i < rxValue.length(); i++) {
-          Serial.print(rxValue[i]);
-        }
-
-        Serial.println();
-
-        if (rxValue.find("A") != -1) {
-            Serial.println("front");
-            forward(motor1, motor2, 50);
-            delay(1000);
-            brake(motor1, motor2);
-        }
-        else if (rxValue.find("B") != -1) {
-            Serial.println("back");
-            back(motor1, motor2, -50);
-            delay(1000);
-            brake(motor1, motor2);
-      }
-        else if (rxValue.find("C") != -1) {
-            Serial.println("right");
-            right(motor1, motor2, 150);
-            delay(600);
-            brake(motor1, motor2);
-            }
-        else if (rxValue.find("D") != -1) {
-            Serial.println("left");
-            left(motor1, motor2, 150);
-            delay(600);
-            brake(motor1, motor2);
-      }
-        else if (rxValue.find("E") != -1) {
-            Serial.println("left");
-            right(motor1, motor2, 150);
-            delay(2400);
-            brake(motor1, motor2);
-      }        Serial.println();
-        Serial.println("*********");
-      }
-    }
-};
-
-void setup() {
+// ================================================================
+// Variable declaration
+// ================================================================
+// Most of the variables are declared in the personal library
+// ================================================================
+// Function Declaration
+// ================================================================
+// These function are kept in the main.cpp because it is easier to modify
+void SerialDataPrint(); // Data from the microcontroller to the PC
+void SerialDataWrite(); // Data from the PC to the microcontroller
+// ================================================================
+// Setup function
+// ================================================================
+void setup()
+{
   Serial.begin(115200);
+  Init_Serial();   // Initialize the serial communication
+  Init_MotorPin(); // Initialize the motor pin
+  Init_ESC();                 // Initialize the ESC
+  Init_MPU();      // Initialize the MPU
+  Init_PID();      // Initialize the PID
+  SerialDataPrint();
 
-  BLEDevice::init("Raidho"); // Give it a name
+  WiFi.softAP(ssid, password);
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
 
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
+  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  });
 
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-
-  pCharacteristic = pService->createCharacteristic(
-                      CHARACTERISTIC_UUID_TX,
-                      BLECharacteristic::PROPERTY_NOTIFY
-                    );
-                      
-  pCharacteristic->addDescriptor(new BLE2902());
-
-  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_UUID_RX,
-                                         BLECharacteristic::PROPERTY_WRITE
-                                       );
-
-  pCharacteristic->setCallbacks(new MyCallbacks());
-
-  pService->start();
-
-  pServer->getAdvertising()->start();
-  Serial.println("Waiting a client connection to notify...");
+  webserver.begin();
+  server.listen(82);
+  Serial.print("Is server live? ");
+  Serial.println(server.available());
 }
 
-void loop() {
+void handle_message(WebsocketsMessage msg) {
+  if (msg.data() == "EMERGENCY_STOP") {
+    emergencyStop();
+  } else {
+    commaIndex = msg.data().indexOf(',');
+    LValue = msg.data().substring(0, commaIndex).toInt();
+    RValue = msg.data().substring(commaIndex + 1).toInt();
+    motor1.drive(LValue);
+    motor2.drive(RValue);
+
+    CtrlPWM = map(LValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL); // Use slider value to control ESC
+    ESC1.writeMicroseconds(CtrlPWM);
+    ESC2.writeMicroseconds(CtrlPWM);
+    ESC3.writeMicroseconds(CtrlPWM);
+    ESC4.writeMicroseconds(CtrlPWM);
+  }
+}
+// ================================================================
+// Loop function
+// ================================================================
+void loop()
+{
+  CtrlPWM = map(analogRead(POT_PIN), 0, 4095, 1000, 2000); // Read the pot, map the reading from [0, 4095] to [0, 180]
+  // Get data from MPU6050
+  Get_MPUangle();
+  Get_accelgyro();
+  // Apply tunning
+  Compute_PID();     // Compute the PID output for x and y angle
+  
+  auto client = server.accept();
+  client.onMessage(handle_message);
+  while (client.available()) {
+    if(CtrlPWM >= 1100 && CtrlPWM <= 1900){  
+      ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
+      ESC4.write(CtrlPWM + motor_cmd_x);  
+      ESC2.write(CtrlPWM + motor_cmd_y);
+    }else{
+      ESC1.write(CtrlPWM);
+      ESC2.write(CtrlPWM);
+      ESC3.write(CtrlPWM);
+      ESC4.write(CtrlPWM);
+    }
+    client.poll();
+    Get_MPUangle();
+    Get_accelgyro();
+    // Apply tunning
+    Compute_PID();     // Compute the PID output for x and y angle
+    SerialDataPrint();
+    emergencyStop();
+  }
+
+  // SerialDataWrite(); // User data to tune the PID parameters
+}
+
+// ================================================================
+// Function Definition
+// ================================================================
+void Init_ESC() {
+    ESC1.attach(MOT_AIN1, MIN_SIGNAL, MAX_SIGNAL);
+    ESC2.attach(MOT_BIN1, MIN_SIGNAL, MAX_SIGNAL);
+    ESC3.attach(MOT_CIN1, MIN_SIGNAL, MAX_SIGNAL);
+    ESC4.attach(MOT_DIN1, MIN_SIGNAL, MAX_SIGNAL);
+    ESC1.writeMicroseconds(MIN_SIGNAL);
+    ESC2.writeMicroseconds(MIN_SIGNAL);
+    ESC3.writeMicroseconds(MIN_SIGNAL);
+    ESC4.writeMicroseconds(MIN_SIGNAL);
+    Serial.println("ESC Initialization Complete: Minimum signal sent.");
+
+    Serial.println();
+    Serial.println("Calibration step 1. Disconnect the battery.");
+    Serial.println("Press any key to continue.");
+    // WaitForKeyStroke();
+    ESC1.writeMicroseconds(MAX_SIGNAL); // Sending MAX_SIGNAL tells the ESC to enter calibration mode
+    ESC2.writeMicroseconds(MAX_SIGNAL);
+    ESC3.writeMicroseconds(MAX_SIGNAL);
+    ESC4.writeMicroseconds(MAX_SIGNAL);
+
+
+    Serial.println();
+    Serial.println("Calibration step 2. Connect the battery.");
+    Serial.println("Wait for two short bips.");
+    Serial.println("Press any key to continue.");
+    // WaitForKeyStroke();
+
+    ESC1.writeMicroseconds(MIN_SIGNAL); // Sending MIN_SIGNAL tells the ESC the calibration value
+    ESC2.writeMicroseconds(MIN_SIGNAL); 
+    ESC3.writeMicroseconds(MIN_SIGNAL); 
+    ESC4.writeMicroseconds(MIN_SIGNAL); 
+    Serial.println();
+    Serial.println("Wait for 4 short bips, and one long bip.");
+    Serial.println("Press any key to finish.");
+    // WaitForKeyStroke();
+}
+
+void emergencyStop() {
+    ESC1.writeMicroseconds(MIN_SIGNAL);
+    ESC2.writeMicroseconds(MIN_SIGNAL);
+    ESC3.writeMicroseconds(MIN_SIGNAL);
+    ESC4.writeMicroseconds(MIN_SIGNAL);
+    Serial.println("Emergency Stop Activated: All motors stopped.");
+}
+
+void WaitForKeyStroke()
+{
+  while (!Serial.available());
+  while (Serial.available())
+    Serial.read();
+}
+
+void SerialDataPrint()
+{
+  if (micros() - time_prev >= 50000)
+  {
+    if (millis() - time_prev >= 50) {  // Print every second
+        time_prev = millis();
+        Serial.print("\n");
+        Serial.print("Time(ms): ");
+        Serial.print(time_prev);
+        Serial.print("   ESC Signal: ");
+        Serial.print(CtrlPWM);
+        Serial.print("\t");
+        Serial.print(anglex);
+        Serial.print("\t");
+        Serial.print(angley);
+        Serial.print("\t");
+        Serial.print(anglez);
+        Serial.print("\t");
+        Serial.print(gyrox);
+        Serial.print("\t");
+        Serial.print(gyroy);
+        Serial.print("\t");
+        Serial.print(gyroz);
+        Serial.print("      \t");
+        Serial.print(motor_cmd_x);
+        Serial.print("\t");
+        Serial.print(motor_cmd_y);
+    }
+  }
+}
+
+void SerialDataWrite()
+{
+  static String received_chars;
+  while (Serial.available())
+  {
+    char inChar = (char)Serial.read();
+    received_chars += inChar;
+    if (inChar == '\n')
+    {
+      switch (received_chars[0])
+      {
+      case 'p':
+        received_chars.remove(0, 1);
+        kp = received_chars.toFloat();
+        break;
+      case 'i':
+        received_chars.remove(0, 1);
+        ki = received_chars.toFloat();
+        break;
+      case 'd':
+        received_chars.remove(0, 1);
+        kd = received_chars.toFloat();
+        break;
+      case 's':
+        received_chars.remove(0, 1);
+        anglex_setpoint = received_chars.toFloat();
+        default:
+          break;
+      }
+      received_chars = "";
+    }
+  }
 }
