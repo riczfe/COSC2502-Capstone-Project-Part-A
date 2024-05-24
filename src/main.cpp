@@ -48,7 +48,6 @@ void setup()
   Init_ESC();                 // Initialize the ESC
   Init_MPU();      // Initialize the MPU
   Init_PID();      // Initialize the PID
-  espnow_initialize(); //Initialise the RECEIVER
 
   WiFi.softAP(ssid, password);
   IPAddress IP = WiFi.softAPIP();
@@ -114,7 +113,6 @@ void loop()
 
   SerialDataWrite(); // User data to tune the PID parameters
   SerialDataPrint(); 
-  espnow_loop();
 }
 
 
