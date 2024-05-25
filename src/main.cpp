@@ -65,6 +65,7 @@ void setup()
     Serial.println(server.available());
 }
 
+//HERE's WHEN IT CONNECTS USING SLIDER TO CONTROL
 void handle_message(WebsocketsMessage msg)
 {
     String data = msg.data();
