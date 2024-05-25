@@ -21,11 +21,10 @@ Servo ESC3;
 Servo ESC4;                      // Define the ESC
 
 int CtrlPWM;                    // Control Signal for ESC (0 - 180 range)
-
+int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
 
 void Init_ESC();                // Function to init the ESC
 void WaitForKeyStroke(); // Function to interact with the serial monitor
-
 // ================================================================
 // Variable declaration
 // ================================================================
@@ -98,6 +97,12 @@ void loop()
       ESC3.write(CtrlPWM + motor_cmd_x + motor_cmd_y);
       ESC4.write(CtrlPWM + motor_cmd_x);  
       ESC2.write(CtrlPWM + motor_cmd_y);
+
+      ESC1_value = CtrlPWM;
+      ESC2_value = CtrlPWM + motor_cmd_x;
+      ESC3_value = CtrlPWM + motor_cmd_x + motor_cmd_y;
+      ESC4_value = CtrlPWM + motor_cmd_x;
+      
     }else{
       ESC1.write(CtrlPWM);
       ESC2.write(CtrlPWM);
@@ -173,9 +178,9 @@ void SerialDataPrint()
     if (millis() - time_prev >= 50) {  // Print every second
         time_prev = millis();
         Serial.print("\n");
-        Serial.print("Time(ms): ");
+        // Serial.print("Time(ms): ");
         Serial.print(time_prev);
-        Serial.print("   ESC Signal: ");
+        // Serial.print("   ESC Signal: ");
         Serial.print(CtrlPWM);
         Serial.print("\t");
         Serial.print(anglex);
@@ -189,29 +194,18 @@ void SerialDataPrint()
         Serial.print(gyroy);
         Serial.print("\t");
         Serial.print(gyroz);
-        Serial.print("      \t");
-        Serial.print(motor_cmd_x);
         Serial.print("\t");
-        Serial.print(motor_cmd_y);
+        Serial.print(CtrlPWM);
+        Serial.print("\t");
+        Serial.print(ESC1_value);
+        Serial.print("\t");
+        Serial.print(ESC2_value);
+        Serial.print("\t");
+        Serial.print(ESC3_value);
+        Serial.print("\t");
+        Serial.print(ESC4_value);
     }
-
-    // time_prev = micros();
-    // Serial.print(millis());
-    // Serial.print("\t");
-    // Serial.print(anglex);
-    // Serial.print("\t");
-    // Serial.print(motor_cmd);
-    // Serial.print("\t");
-    // Serial.print(kp);
-    // Serial.print("\t");
-    // Serial.print(ki);
-    // Serial.print("\t");
-    // Serial.print(kd);
-    // Serial.print("\t");
-    // Serial.print(anglex_setpoint);
-    // Serial.print("okayy");
-
-    // Serial.println();
+    
   }
 }
 
