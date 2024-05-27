@@ -77,17 +77,27 @@ void handle_message(WebsocketsMessage msg)
 
     commaIndex = data.indexOf(',');
     LValue = data.substring(0, commaIndex).toInt();
-    RValue = data.substring(commaIndex + 1, data.lastIndexOf(',')).toInt();
-    CtrlPWM = data.substring(data.lastIndexOf(',') + 1).toInt();
+    int secondCommaIndex = data.indexOf(',', commaIndex + 1);
+    RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
+    int sliderValue = data.substring(secondCommaIndex + 1).toInt();
 
     motor1.drive(LValue);
     motor2.drive(RValue);
+
+    // Ensure CtrlPWM is correctly mapped from sliderValue (0-100) to ESC range (1000-2000)
+    CtrlPWM = map(sliderValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL);
 
     ESC1.writeMicroseconds(CtrlPWM);
     ESC2.writeMicroseconds(CtrlPWM);
     ESC3.writeMicroseconds(CtrlPWM);
     ESC4.writeMicroseconds(CtrlPWM);
+
+    ESC1_value = CtrlPWM;
+    ESC2_value = CtrlPWM;
+    ESC3_value = CtrlPWM;
+    ESC4_value = CtrlPWM;
 }
+
 // ================================================================
 // Loop function
 // ================================================================
