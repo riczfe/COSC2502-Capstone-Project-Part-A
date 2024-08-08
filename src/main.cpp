@@ -24,7 +24,7 @@ int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
 
 void Init_ESC();         // Function to init the ESC
 void WaitForKeyStroke(); // Function to interact with the serial monitor
-void emergencyStop();    // Function to handle emergency stop
+void sendEmergencyStop();    // Function to handle emergency stop
 // ================================================================
 // Variable declaration
 // ================================================================
@@ -71,7 +71,7 @@ void handle_message(WebsocketsMessage msg)
     String data = msg.data();
     if (data == "EMERGENCY_STOP")
     {
-        emergencyStop();
+        sendEmergencyStop();
         return;
     }
 
@@ -271,7 +271,7 @@ void SerialDataWrite()
     }
 }
 
-void emergencyStop()
+void sendEmergencyStop()
 {
     ESC1.writeMicroseconds(MIN_SIGNAL);
     ESC2.writeMicroseconds(MIN_SIGNAL);

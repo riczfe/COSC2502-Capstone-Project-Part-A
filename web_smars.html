@@ -144,6 +144,15 @@ h1 {
     font-style: italic;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
+
+
+.status-connected {
+            background-color: green;
+        }
+
+.status-disconnected {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
@@ -154,19 +163,34 @@ h1 {
                 <p id="text1">Slider Control</p>
                 <input placeholder="slider" type="range" id="slider" min="0" max="100" value="0">
                 <div id="slider-value">Value: XX</div>
-            <div id="status-box">Disconnected</div>
+            <div id="status-box" >Disconnected</div>
 
                 <p id="text2">Joystick Control</p>
                 <div id="joystick-container"></div>
 
         </div>
-        <button id="emergency-button">Emergency Stop</button>
+        <button id="emergency-button" onclick="sendEmergencyStop()">Emergency Stop</button>
     </div>
     <script>
         const view = document.getElementById('stream');
         const WS_URL = "ws://" + window.location.host + ":82";
         const ws = new WebSocket(WS_URL);
         
+          // Handle connection status
+      const statusBox = document.getElementById("status-box");
+
+        function updateConnectionStatus(isConnected) {
+        if (isConnected) {
+        statusBox.textContent = "Connected";
+        statusBox.classList.remove("status-disconnected");
+        statusBox.classList.add("status-connected");
+        } else {
+        statusBox.textContent = "Disconnected";
+        statusBox.classList.remove("status-connected");
+        statusBox.classList.add("status-disconnected");
+        }
+        }
+
         ws.onmessage = message => {
             if (message.data instanceof Blob) {
                 var urlObject = URL.createObjectURL(message.data);
@@ -234,8 +258,8 @@ h1 {
     function sendEmergencyStop() {
             try {
                 ws.send("EMERGENCY_STOP");
-            } catch (options) {
-                console.log(options);
+            } catch (e) {
+                console.log(e);
             }
         }
 
@@ -252,7 +276,7 @@ h1 {
 });
 
     setInterval(function () {
-            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
+            send(getMotorValues(joystick.GetX(), joystick.GetY(), slider.value));
         }, 300);
 // Joystick implementation
 
