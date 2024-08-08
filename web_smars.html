@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drone Controller</title>
     <style>
-body {
+    body {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -144,14 +144,6 @@ h1 {
     font-style: italic;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
-
-.status-connected {
-            background-color: green;
-        }
-
-.status-disconnected {
-            background-color: red;
-        }
     </style>
 </head>
 <body>
@@ -162,17 +154,19 @@ h1 {
                 <p id="text1">Slider Control</p>
                 <input placeholder="slider" type="range" id="slider" min="0" max="100" value="0">
                 <div id="slider-value">Value: XX</div>
-                <div id="status-box" class="status-disconnected">Disconnected</div>
+            <div id="status-box">Disconnected</div>
+
                 <p id="text2">Joystick Control</p>
                 <div id="joystick-container"></div>
+
         </div>
-        <button id="emergency-button" onclick="sendEmergencyStop()">Emergency Stop</button>
+        <button id="emergency-button">Emergency Stop</button>
     </div>
-    <script type="text/javascript">
+    <script>
         const view = document.getElementById('stream');
         const WS_URL = "ws://" + window.location.host + ":82";
         const ws = new WebSocket(WS_URL);
-
+        
         ws.onmessage = message => {
             if (message.data instanceof Blob) {
                 var urlObject = URL.createObjectURL(message.data);
@@ -204,14 +198,9 @@ h1 {
             }
         }
 
-        
-
-
-        var slider = document.getElementById("slider");
-
         document.addEventListener("DOMContentLoaded", function() {
     // Initialize the joystick
-    var joystick = new JoyStick("joystick-container", { 
+    var joystick = new JoyStick("joystick-container", {
         internalFillColor: "#000000", // Blue color for the joystick
         internalStrokeColor: "#ffffff",
         externalStrokeColor: "#52e36e"
@@ -222,66 +211,18 @@ h1 {
     const sliderValueDisplay = document.getElementById("slider-value");
     slider.value = 0; // Ensure slider starts at 0
 
-    slider.oninput = function() {
-            var sliderValue = slider.value;
-            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-        }
-        
     // Handle slider change
     slider.addEventListener("input", function() {
         console.log("Slider value:", slider.value);
         sliderValueDisplay.textContent = "Value: " + slider.value; // Update the display value
-        // (slider.value = 100) {
-        //     sliderValueDisplay.textContent = "Value: MAXIMUM" ;
-        // }
         // Placeholder: Send the slider value to the drone
         sendSliderValueToDrone(slider.value);
     });
     
-    function getMotorValues(nJoyX, nJoyY, sliderValue) {
-            var nMotMixL;
-            var nMotMixR;
-            var fPivYLimit = 32.0;
-
-            var nMotPremixL;
-            var nMotPremixR;
-            var nPivSpeed;
-            var fPivScale;
-
-            if (nJoyY >= 0) {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-                nMotPremixR = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-            } else {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-                nMotPremixR = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-            }
-
-            nMotPremixL = nMotPremixL * nJoyY / 100.0;
-            nMotPremixR = nMotPremixR * nJoyY / 100.0;
-
-            nPivSpeed = nJoyX;
-            fPivScale = (Math.abs(nJoyY) > fPivYLimit) ? 0.0 : (1.0 - Math.abs(nJoyY) / fPivYLimit);
-
-            nMotMixL = (1.0 - fPivScale) * nMotPremixL + fPivScale * (nPivSpeed);
-            nMotMixR = (1.0 - fPivScale) * nMotPremixR + fPivScale * (-nPivSpeed);
-
-            return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
+    slider.oninput = function() {
+            var sliderValue = slider.value;
+            send(getMotorValues(joystick.GetX(), joystick.GetY(), sliderValue));
         }
-
-        
-
-        function sendEmergencyStop() {
-            try {
-                ws.send("EMERGENCY_STOP");
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
-        setInterval(function () {
-            send(getMotorValues(joy.GetX(), joy.GetY(), slider.value));
-        }, 300);
-
 
     // Handle emergency button click
     const emergencyButton = document.getElementById("emergency-button");
@@ -290,21 +231,13 @@ h1 {
         // Placeholder: Send emergency stop command to the drone
         sendEmergencyStopToDrone();
     });
-
-      // Handle connection status
-      const statusBox = document.getElementById("status-box");
-
-        function updateConnectionStatus(isConnected) {
-    if (isConnected) {
-        statusBox.textContent = "Connected";
-        statusBox.classList.remove("status-disconnected");
-        statusBox.classList.add("status-connected");
-    } else {
-        statusBox.textContent = "Disconnected";
-        statusBox.classList.remove("status-connected");
-        statusBox.classList.add("status-disconnected");
-    }
-}
+    function sendEmergencyStop() {
+            try {
+                ws.send("EMERGENCY_STOP");
+            } catch (options) {
+                console.log(options);
+            }
+        }
 
     // Placeholder functions for drone communication
     function sendSliderValueToDrone(value) {
@@ -318,98 +251,155 @@ h1 {
     }
 });
 
+    setInterval(function () {
+            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
+        }, 300);
 // Joystick implementation
-var JoyStick = function(containerId, options) {
-    options = options || {};
-    var title = options.title || "joystick",
-        width = options.width || 200,
-        height = options.height || 200,
-        internalFillColor = options.internalFillColor || "#000000", // Change internal fill color here
-        internalLineWidth = options.internalLineWidth || 2,
-        internalStrokeColor = options.internalStrokeColor || "#C70039", // Change internal stroke color here
-        externalLineWidth = options.externalLineWidth || 2,
-        externalStrokeColor = options.externalStrokeColor || "#900C3F", // Change external stroke color here
-        externalFillColor = options.externalFillColor || "#52e36e", // New external fill color
-        container = document.getElementById(containerId),
-        canvas = document.createElement("canvas");
 
-    canvas.id = title;
-    canvas.width = width;
-    canvas.height = height;
-    container.appendChild(canvas);
+var JoyStick = function(t, e) {
+            e = e || {};
+            var i = e.title || "joystick",
+                n = e.width || 0,
+                o = e.height || 0,
+                h = e.internalFillColor || "#000000", // Change internal fill color here
+                r = e.internalLineWidth || 2,
+                d = e.internalStrokeColor || "#C70039", // Change internal stroke color here
+                a = e.externalLineWidth || 2,
+                l = e.externalStrokeColor || "#900C3F", // Change external stroke color here
+                z = e.externalFillColor || "#52e36e", // New external fill color
+                c = document.getElementById(t),
+                u = document.createElement("canvas");
 
-    var context = canvas.getContext("2d"),
-        pressed = false,
-        radius = canvas.width / 2 - 20,
-        centerX = canvas.width / 2,
-        centerY = canvas.height / 2,
-        knobX = centerX,
-        knobY = centerY;
+            u.id = i;
+            if (n == 0) n = c.clientWidth;
+            if (o == 0) o = c.clientHeight;
+            u.width = n;
+            u.height = o;
+            c.appendChild(u);
 
-    function drawJoystick() {   
-        context.clearRect(0, 0, canvas.width, canvas.height);
+            var s = u.getContext("2d"),
+                f = 0,
+                v = 2 * Math.PI,
+                g = (u.width - 110) / 2,
+                w = g + 5,
+                C = g + 30,
+                m = u.width / 2,
+                p = u.height / 2,
+                L = u.width / 10,
+                E = -1 * L,
+                S = u.height / 10,
+                k = -1 * S,
+                W = m,
+                G = p;
 
-         // Draw external circle
-         context.beginPath();
-         context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-         context.lineWidth = externalLineWidth;
-         context.strokeStyle = externalStrokeColor;
-         context.stroke();
-         context.fillStyle = externalFillColor; // Set external fill color
-         context.fill(); // Fill the external circle
- 
-         // Draw internal circle
-         context.beginPath();
-         context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
-         var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
-         gradient.addColorStop(0, internalFillColor);
-        //  gradient.addColorStop(1, internalStrokeColor); 
-         context.fillStyle = gradient;
-         context.fill();
-         context.lineWidth = internalLineWidth;
-         context.strokeStyle = internalStrokeColor;
-         context.stroke();
-     }
-
-    canvas.addEventListener("mousedown", function(event) {
-        pressed = true;
-    });
-
-    canvas.addEventListener("mousemove", function(event) {
-        if (pressed) {
-            var rect = canvas.getBoundingClientRect();
-            var dx = event.clientX - rect.left - centerX;
-            var dy = event.clientY - rect.top - centerY;
-            var distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > radius) {
-                var angle = Math.atan2(dy, dx);
-                dx = radius * Math.cos(angle);
-                dy = radius * Math.sin(angle);
+            function x() {
+                s.beginPath();
+                s.arc(m, p, C, 0, v, !1);
+                s.lineWidth = a;
+                s.strokeStyle = l;
+                s.stroke();
             }
 
-            knobX = centerX + dx;
-            knobY = centerY + dy;
-            drawJoystick();
-        }
-    });
+            function y() {
+                s.beginPath();
+                if (W < g) W = w;
+                if (W + g > u.width) W = u.width - w;
+                if (G < g) G = w;
+                if (G + g > u.height) G = u.height - w;
+                s.arc(W, G, g, 0, v, !1);
+                var t = s.createRadialGradient(m, p, 5, m, p, 200);
+                t.addColorStop(0, h);
+                t.addColorStop(1, d);
+                s.fillStyle = t;
+                s.fill();
+                s.lineWidth = r;
+                s.strokeStyle = d;
+                s.stroke();
+            }
 
-    canvas.addEventListener("mouseup", function() {
-        pressed = false;
-        knobX = centerX;
-        knobY = centerY;
-        drawJoystick();
-    });
+            if ("ontouchstart" in document.documentElement) {
+                u.addEventListener("touchstart", function() {
+                    f = 1;
+                }, !1);
+                u.addEventListener("touchmove", function(t) {
+                    t.preventDefault();
+                    if (f == 1) {
+                        W = t.touches[0].pageX;
+                        G = t.touches[0].pageY;
+                        W -= u.offsetLeft;
+                        G -= u.offsetTop;
+                        s.clearRect(0, 0, u.width, u.height);
+                        x();
+                        y();
+                    }
+                }, !1);
+                u.addEventListener("touchend", function() {
+                    f = 0;
+                    W = m;
+                    G = p;
+                    s.clearRect(0, 0, u.width, u.height);
+                    x();
+                    y();
+                }, !1);
+            } else {
+                u.addEventListener("mousedown", function() {
+                    f = 1;
+                }, !1);
+                u.addEventListener("mousemove", function(t) {
+                    if (f == 1) {
+                        W = t.pageX;
+                        G = t.pageY;
+                        W -= u.offsetLeft;
+                        G -= u.offsetTop;
+                        s.clearRect(0, 0, u.width, u.height);
+                        x();
+                        y();
+                    }
+                }, !1);
+                u.addEventListener("mouseup", function() {
+                    f = 0;
+                    W = m;
+                    G = p;
+                    s.clearRect(0, 0, u.width, u.height);
+                    x();
+                    y();
+                }, !1);
+            }
 
-    canvas.addEventListener("mouseleave", function() {
-        pressed = false;
-        knobX = centerX;
-        knobY = centerY;
-        drawJoystick();
-    });
+            x();
+            y();
 
-    drawJoystick();
-};
+            this.GetWidth = function() {
+                return u.width;
+            }
+            this.GetHeight = function() {
+                return u.height;
+            }
+            this.GetPosX = function() {
+                return W;
+            }
+            this.GetPosY = function() {
+                return G;
+            }
+            this.GetX = function() {
+                return ((W - m) / w * 100).toFixed();
+            }
+            this.GetY = function() {
+                return ((G - p) / w * -100).toFixed();
+            }
+            this.GetDir = function() {
+                var t = "",
+                    e = W - m,
+                    i = G - p;
+                if (i >= k && i <= S) t = "C";
+                if (i < k) t = "N";
+                if (i > S) t = "S";
+                if (e < E) t += "W";
+                if (e > L) t += "E";
+                return t;
+            }
+        };
+    
 </script>
 </body>
 </html>
