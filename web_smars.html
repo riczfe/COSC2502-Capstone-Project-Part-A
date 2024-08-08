@@ -1,188 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Controller</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no' />
+    <meta charset="utf-8" />
+    <title>Joystick Control</title>
     <style>
-    body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    background-color: white;
-    background-image: url('droneimage.jpg');
-}
-
-#app-container {
-    width: 844px; /* iPhone 13 height in landscape mode */
-    height: 390px; /* iPhone 13 width in landscape mode */
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    
-}
-
-h1 {
-    margin-top: 0;
-}
-
-#controller {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-
-#potSlider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 30%;
-    height: 50px;
-    transform: rotate(-90deg); /* Rotate slider to vertical */
-    margin-top: 120px;
-    margin-left: -260px;
-    border-radius: 50px;
-    background: linear-gradient(to right,green, orange, yellow, red) ;
-    outline: none;
-    cursor: pointer;
-}
-
-/* Custom slider thumb */
-#potSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 40px;
-    height: 80px;
-    border-radius: 50%;
-    background: black;
-    cursor: pointer;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-}
-
-#potSlider::-moz-range-thumb {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-}
-
-#joystick-container {
-    width: 200px; /* Ensure width */
-    height: 200px; /* Ensure height */
-    background-color: transparent; /* Transparent background */
-    position: absolute; /* Position joystick in front */
-    top: 50%; /* Center the joystick vertically */
-    left: 70%; /* Center the joystick horizontally */
-    transform: translate(-50%, -50%); /* Adjust positioning */
-    z-index: 10; /* Ensure joystick is on top */
-}
-
-#status-box {
-    background-color: grey;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 20px;
-    margin-top: 50px;
-    margin-left: 45px;
-}
-
-#emergency-button {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 20px 50px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 20px;
-    margin-top: 50px;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-}
-
-#emergency-button:hover {
-    background-color: darkred;
-}
-
-#text1 {
-    margin-top: -150px;
-    margin-left: 50px;
-    font-size: 20px;
-    text-align: left;
-    justify-content: left;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-
-}
-
-#text2 {
-    margin-top: -150px;
-    margin-left: 30px;
-    padding: 50px;
-    font-size: 20px;
-    text-align: right;
-    justify-content: right;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-
-}
-#slider-value {
-    margin-bottom:-100px;
-    margin-left: 170px;
-    font-size: 18px;
-    color: #333;
-    position: absolute;
-    font-style: italic;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-}
-
-
-.status-connected {
-            background-color: green;
+        #container {
+            width: 100%;
+            height: 49vh;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 7px;
+            touch-action: none;
         }
 
-.status-disconnected {
+        #item {
+            width: 100px;
+            height: 100px;
+            background-color: rgb(245, 230, 99);
+            border: 10px solid rgba(136, 136, 136, .5);
+            border-radius: 50%;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #item:active {
+            background-color: rgba(168, 218, 220, 1.00);
+        }
+
+        #item:hover {
+            cursor: pointer;
+            border-width: 20px;
+        }
+
+        #area {
+            position: fixed;
+            right: 0;
+            top: 0;
+        }
+
+        #emergencyButton {
+            width: 100%;
+            height: 40px;
             background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
         }
     </style>
-</head>
-<body>
-    <div id="app-container">
-        <h1>Drone Controller</h1>
-        <div id="controller">
-
-                <p id="text1">Slider Control</p>
-                <input placeholder="slider" type="range" id="potSlider" class="slider" min="0" max="100" value="0">
-                <div id="slider-value">Value: XX</div>
-            <div id="status-box" >Disconnected</div>
-
-                <p id="text2">Joystick Control</p>
-                <div id="joystick-container"></div>
-
-        </div>
-        <button id="emergency-button" onclick="sendEmergencyStop()">Emergency Stop</button>
-    </div>
-    <script>
+    <script type="text/javascript">
         var JoyStick = function(t, e) {
             e = e || {};
             var i = e.title || "joystick",
                 n = e.width || 0,
                 o = e.height || 0,
-                h = e.internalFillColor || "#000000", // Change internal fill color here
+                h = e.internalFillColor || "#00AA00",
                 r = e.internalLineWidth || 2,
-                d = e.internalStrokeColor || "#C70039", // Change internal stroke color here
+                d = e.internalStrokeColor || "#003300",
                 a = e.externalLineWidth || 2,
-                l = e.externalStrokeColor || "#900C3F", // Change external stroke color here
-                z = e.externalFillColor || "#52e36e", // New external fill color
+                l = e.externalStrokeColor || "#008000",
                 c = document.getElementById(t),
                 u = document.createElement("canvas");
 
@@ -315,12 +196,22 @@ h1 {
                 return t;
             }
         };
-
-
+    </script>
+</head>
+<body>
+    <div id='outerContainer'>
+        <div style="height: 40vh;"></div>
+        <div id="joyDiv" style="width:200px;height:200px;margin:auto;"></div>
+        <input type="range" min="0" max="100" value="50" class="slider" id="potSlider">
+        <button id="emergencyButton" onclick="sendEmergencyStop()">Emergency Stop</button>
+    </div>
+    <script>
         const view = document.getElementById('stream');
         const WS_URL = "ws://" + window.location.host + ":82";
         const ws = new WebSocket(WS_URL);
-        
+        console.log(ws);
+        console.log(WS_URL);
+        console.log(view);
         ws.onmessage = message => {
             if (message.data instanceof Blob) {
                 var urlObject = URL.createObjectURL(message.data);
@@ -352,25 +243,10 @@ h1 {
             }
         }
 
-    // //       // Handle connection status
-    // //   const statusBox = document.getElementById("status-box");
-
-    //     function updateConnectionStatus(isConnected) {
-    //     if (isConnected) {
-    //     statusBox.textContent = "Connected";
-    //     statusBox.classList.remove("status-disconnected");
-    //     statusBox.classList.add("status-connected");
-    //     } else {
-    //     statusBox.textContent = "Disconnected";
-    //     statusBox.classList.remove("status-connected");
-    //     statusBox.classList.add("status-disconnected");
-    //     }
-    //     }
-
-    var joy = new JoyStick('joyDiv');
-    var potSlider = document.getElementById("potSlider");
-    
-    function getMotorValues(nJoyX, nJoyY, sliderValue) {
+        var joy = new JoyStick('joyDiv');
+        var potSlider = document.getElementById("potSlider");
+        
+        function getMotorValues(nJoyX, nJoyY, sliderValue) {
             var nMotMixL;
             var nMotMixR;
             var fPivYLimit = 32.0;
@@ -400,10 +276,10 @@ h1 {
             return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
         }
 
-    
         potSlider.oninput = function() {
             var sliderValue = potSlider.value;
-            send(getMotorValues(joystick.GetX(), joystick.GetY(), sliderValue));
+            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
+            console
         }
 
         function sendEmergencyStop() {
@@ -414,55 +290,16 @@ h1 {
             }
         }
 
-        
         setInterval(function () {
-            send(getMotorValues(joystick.GetX(), joystick.GetY(), potSlider.value));
+            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
         }, 300);
-
-//         document.addEventListener("DOMContentLoaded", function() {
-//     // Initialize the joystick
-//     // var joystick = new JoyStick("joystick-container", {
-//     //     internalFillColor: "#000000", // Blue color for the joystick
-//     //     internalStrokeColor: "#ffffff",
-//     //     externalStrokeColor: "#52e36e"
-//     // });
-
-//     // // Initialize the slider to 0
-//     // const potSlider = document.getElementById("potSlider");
-//     // const potsliderValueDisplay = document.getElementById("slider-value");
-//     // potSlider.value = 0; // Ensure slider starts at 0
-
-//     // // Handle slider change
-//     // slider.addEventListener("input", function() {
-//     //     console.log("Slider value:", slider.value);
-//     //     sliderValueDisplay.textContent = "Value: " + slider.value; // Update the display value
-//     //     // Placeholder: Send the slider value to the drone
-//     //     sendSliderValueToDrone(slider.value);
-//     // });
-   
-
-//     // Handle emergency button click
-//     // const emergencyButton = document.getElementById("emergency-button");
-//     // emergencyButton.addEventListener("click", function() {
-//     //     console.log("Emergency stop triggered!");
-//     //     // Placeholder: Send emergency stop command to the drone
-//     //     sendEmergencyStopToDrone();
-//     // });
-   
-//     // // Placeholder functions for drone communication
-//     // function sendSliderValueToDrone(value) {
-//     //     // Implement the actual communication logic here
-//     //     console.log("Sending slider value to drone:", value);
-//     // }
-
-//     // function sendEmergencyStopToDrone() {
-//     //     // Implement the actual communication logic here
-//     //     console.log("Sending emergency stop to drone");
-//     // }
-// });
-
-
-
-</script>
+        console.log(potSlider);
+        console.log(sliderValue);
+        console.log(joy.GetX);
+        console.log(joy.GetY);
+        console.log( nJoyX);
+        console.log(nJoyY);
+       
+    </script>
 </body>
 </html>
