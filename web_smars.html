@@ -1,295 +1,325 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no' />
-    <meta charset="utf-8" />
-    <title>Joystick Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Controller</title>
     <style>
-        #container {
-            width: 100%;
-            height: 49vh;
-            background-color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 7px;
-            touch-action: none;
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: white;
+    background-image: url('droneimage.jpg');
+}
+
+#app-container {
+    width: 844px; /* iPhone 13 height in landscape mode */
+    height: 390px; /* iPhone 13 width in landscape mode */
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    
+}
+
+h1 {
+    margin-top: 0;
+}
+
+#controller {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+#slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30%;
+    height: 50px;
+    transform: rotate(-90deg); /* Rotate slider to vertical */
+    margin-top: 120px;
+    margin-left: -260px;
+    border-radius: 50px;
+    background: linear-gradient(to right,green, orange, yellow, red) ;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Custom slider thumb */
+#slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 80px;
+    border-radius: 50%;
+    background: black;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+#slider::-moz-range-thumb {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+#joystick-container {
+    width: 200px; /* Ensure width */
+    height: 200px; /* Ensure height */
+    background-color: transparent; /* Transparent background */
+    position: absolute; /* Position joystick in front */
+    top: 50%; /* Center the joystick vertically */
+    left: 70%; /* Center the joystick horizontally */
+    transform: translate(-50%, -50%); /* Adjust positioning */
+    z-index: 10; /* Ensure joystick is on top */
+}
+
+#status-box {
+    background-color: grey;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 20px;
+    margin-top: 50px;
+    margin-left: 45px;
+}
+
+#emergency-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 20px 50px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 20px;
+    margin-top: 50px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#emergency-button:hover {
+    background-color: darkred;
+}
+
+#text1 {
+    margin-top: -150px;
+    margin-left: 50px;
+    font-size: 20px;
+    text-align: left;
+    justify-content: left;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+}
+
+#text2 {
+    margin-top: -150px;
+    margin-left: 30px;
+    padding: 50px;
+    font-size: 20px;
+    text-align: right;
+    justify-content: right;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+}
+#slider-value {
+    margin-bottom:-100px;
+    margin-left: 170px;
+    font-size: 18px;
+    color: #333;
+    position: absolute;
+    font-style: italic;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.status-connected {
+            background-color: green;
         }
 
-        #item {
-            width: 100px;
-            height: 100px;
-            background-color: rgb(245, 230, 99);
-            border: 10px solid rgba(136, 136, 136, .5);
-            border-radius: 50%;
-            touch-action: none;
-            user-select: none;
-        }
-
-        #item:active {
-            background-color: rgba(168, 218, 220, 1.00);
-        }
-
-        #item:hover {
-            cursor: pointer;
-            border-width: 20px;
-        }
-
-        #area {
-            position: fixed;
-            right: 0;
-            top: 0;
-        }
-
-        #emergencyButton {
-            width: 100%;
-            height: 40px;
+.status-disconnected {
             background-color: red;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
         }
     </style>
-    <script type="text/javascript">
-        var JoyStick = function(t, e) {
-            e = e || {};
-            var i = e.title || "joystick",
-                n = e.width || 0,
-                o = e.height || 0,
-                h = e.internalFillColor || "#00AA00",
-                r = e.internalLineWidth || 2,
-                d = e.internalStrokeColor || "#003300",
-                a = e.externalLineWidth || 2,
-                l = e.externalStrokeColor || "#008000",
-                c = document.getElementById(t),
-                u = document.createElement("canvas");
-
-            u.id = i;
-            if (n == 0) n = c.clientWidth;
-            if (o == 0) o = c.clientHeight;
-            u.width = n;
-            u.height = o;
-            c.appendChild(u);
-
-            var s = u.getContext("2d"),
-                f = 0,
-                v = 2 * Math.PI,
-                g = (u.width - 110) / 2,
-                w = g + 5,
-                C = g + 30,
-                m = u.width / 2,
-                p = u.height / 2,
-                L = u.width / 10,
-                E = -1 * L,
-                S = u.height / 10,
-                k = -1 * S,
-                W = m,
-                G = p;
-
-            function x() {
-                s.beginPath();
-                s.arc(m, p, C, 0, v, !1);
-                s.lineWidth = a;
-                s.strokeStyle = l;
-                s.stroke();
-            }
-
-            function y() {
-                s.beginPath();
-                if (W < g) W = w;
-                if (W + g > u.width) W = u.width - w;
-                if (G < g) G = w;
-                if (G + g > u.height) G = u.height - w;
-                s.arc(W, G, g, 0, v, !1);
-                var t = s.createRadialGradient(m, p, 5, m, p, 200);
-                t.addColorStop(0, h);
-                t.addColorStop(1, d);
-                s.fillStyle = t;
-                s.fill();
-                s.lineWidth = r;
-                s.strokeStyle = d;
-                s.stroke();
-            }
-
-            if ("ontouchstart" in document.documentElement) {
-                u.addEventListener("touchstart", function() {
-                    f = 1;
-                }, !1);
-                u.addEventListener("touchmove", function(t) {
-                    t.preventDefault();
-                    if (f == 1) {
-                        W = t.touches[0].pageX;
-                        G = t.touches[0].pageY;
-                        W -= u.offsetLeft;
-                        G -= u.offsetTop;
-                        s.clearRect(0, 0, u.width, u.height);
-                        x();
-                        y();
-                    }
-                }, !1);
-                u.addEventListener("touchend", function() {
-                    f = 0;
-                    W = m;
-                    G = p;
-                    s.clearRect(0, 0, u.width, u.height);
-                    x();
-                    y();
-                }, !1);
-            } else {
-                u.addEventListener("mousedown", function() {
-                    f = 1;
-                }, !1);
-                u.addEventListener("mousemove", function(t) {
-                    if (f == 1) {
-                        W = t.pageX;
-                        G = t.pageY;
-                        W -= u.offsetLeft;
-                        G -= u.offsetTop;
-                        s.clearRect(0, 0, u.width, u.height);
-                        x();
-                        y();
-                    }
-                }, !1);
-                u.addEventListener("mouseup", function() {
-                    f = 0;
-                    W = m;
-                    G = p;
-                    s.clearRect(0, 0, u.width, u.height);
-                    x();
-                    y();
-                }, !1);
-            }
-
-            x();
-            y();
-
-            this.GetWidth = function() {
-                return u.width;
-            }
-            this.GetHeight = function() {
-                return u.height;
-            }
-            this.GetPosX = function() {
-                return W;
-            }
-            this.GetPosY = function() {
-                return G;
-            }
-            this.GetX = function() {
-                return ((W - m) / w * 100).toFixed();
-            }
-            this.GetY = function() {
-                return ((G - p) / w * -100).toFixed();
-            }
-            this.GetDir = function() {
-                var t = "",
-                    e = W - m,
-                    i = G - p;
-                if (i >= k && i <= S) t = "C";
-                if (i < k) t = "N";
-                if (i > S) t = "S";
-                if (e < E) t += "W";
-                if (e > L) t += "E";
-                return t;
-            }
-        };
-    </script>
 </head>
 <body>
-    <div id='outerContainer'>
-        <div style="height: 40vh;"></div>
-        <div id="joyDiv" style="width:200px;height:200px;margin:auto;"></div>
-        <input type="range" min="0" max="100" value="50" class="slider" id="potSlider">
-        <button id="emergencyButton" onclick="sendEmergencyStop()">Emergency Stop</button>
+    <div id="app-container">
+        <h1>Drone Controller</h1>
+        <div id="controller">
+
+                <p id="text1">Slider Control</p>
+                <input placeholder="slider" type="range" id="slider" min="0" max="100" value="0">
+                <div id="slider-value">Value: XX</div>
+                <div id="status-box" class="status-disconnected">Disconnected</div>
+                <p id="text2">Joystick Control</p>
+                <div id="joystick-container"></div>
+        </div>
+        <button id="emergency-button" onclick="sendEmergencyStop()">Emergency Stop</button>
     </div>
     <script>
-        const view = document.getElementById('stream');
-        const WS_URL = "ws://" + window.location.host + ":82";
-        const ws = new WebSocket(WS_URL);
-        
-        ws.onmessage = message => {
-            if (message.data instanceof Blob) {
-                var urlObject = URL.createObjectURL(message.data);
-                view.src = urlObject;
-            }
-        };
+        document.addEventListener("DOMContentLoaded", function() {
+    // Initialize the joystick
+    var joystick = new JoyStick("joystick-container", { 
+        internalFillColor: "#000000", // Blue color for the joystick
+        internalStrokeColor: "#ffffff",
+        externalStrokeColor: "#52e36e"
+    });
 
-        var lastText, lastSend, sendTimeout;
-        function send(txt) {
-            var now = new Date().getTime();
-            if (lastSend === undefined || now - lastSend >= 30) {
-                try {
-                    ws.send(txt);
-                    lastSend = new Date().getTime();
-                    return;
-                } catch (e) {
-                    console.log(e);
-                }
+    // Initialize the slider to 0
+    const slider = document.getElementById("slider");
+    const sliderValueDisplay = document.getElementById("slider-value");
+    slider.value = 0; // Ensure slider starts at 0
+
+    // Handle slider change
+    slider.addEventListener("input", function() {
+        console.log("Slider value:", slider.value);
+        sliderValueDisplay.textContent = "Value: " + slider.value; // Update the display value
+        // (slider.value = 100) {
+        //     sliderValueDisplay.textContent = "Value: MAXIMUM" ;
+        // }
+        // Placeholder: Send the slider value to the drone
+        sendSliderValueToDrone(slider.value);
+    });
+    
+    // Handle emergency button click
+    const emergencyButton = document.getElementById("emergency-button");
+    emergencyButton.addEventListener("click", function() {
+        console.log("Emergency stop triggered!");
+        // Placeholder: Send emergency stop command to the drone
+        sendEmergencyStopToDrone();
+    });
+
+      // Handle connection status
+      const statusBox = document.getElementById("status-box");
+
+        function updateConnectionStatus(isConnected) {
+    if (isConnected) {
+        statusBox.textContent = "Connected";
+        statusBox.classList.remove("status-disconnected");
+        statusBox.classList.add("status-connected");
+    } else {
+        statusBox.textContent = "Disconnected";
+        statusBox.classList.remove("status-connected");
+        statusBox.classList.add("status-disconnected");
+    }
+}
+
+    // Placeholder functions for drone communication
+    function sendSliderValueToDrone(value) {
+        // Implement the actual communication logic here
+        console.log("Sending slider value to drone:", value);
+    }
+
+    function sendEmergencyStopToDrone() {
+        // Implement the actual communication logic here
+        console.log("Sending emergency stop to drone");
+    }
+});
+
+// Joystick implementation
+var JoyStick = function(containerId, options) {
+    options = options || {};
+    var title = options.title || "joystick",
+        width = options.width || 200,
+        height = options.height || 200,
+        internalFillColor = options.internalFillColor || "#000000", // Change internal fill color here
+        internalLineWidth = options.internalLineWidth || 2,
+        internalStrokeColor = options.internalStrokeColor || "#C70039", // Change internal stroke color here
+        externalLineWidth = options.externalLineWidth || 2,
+        externalStrokeColor = options.externalStrokeColor || "#900C3F", // Change external stroke color here
+        externalFillColor = options.externalFillColor || "#52e36e", // New external fill color
+        container = document.getElementById(containerId),
+        canvas = document.createElement("canvas");
+
+    canvas.id = title;
+    canvas.width = width;
+    canvas.height = height;
+    container.appendChild(canvas);
+
+    var context = canvas.getContext("2d"),
+        pressed = false,
+        radius = canvas.width / 2 - 20,
+        centerX = canvas.width / 2,
+        centerY = canvas.height / 2,
+        knobX = centerX,
+        knobY = centerY;
+
+    function drawJoystick() {   
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+         // Draw external circle
+         context.beginPath();
+         context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+         context.lineWidth = externalLineWidth;
+         context.strokeStyle = externalStrokeColor;
+         context.stroke();
+         context.fillStyle = externalFillColor; // Set external fill color
+         context.fill(); // Fill the external circle
+ 
+         // Draw internal circle
+         context.beginPath();
+         context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
+         var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
+         gradient.addColorStop(0, internalFillColor);
+        //  gradient.addColorStop(1, internalStrokeColor); 
+         context.fillStyle = gradient;
+         context.fill();
+         context.lineWidth = internalLineWidth;
+         context.strokeStyle = internalStrokeColor;
+         context.stroke();
+     }
+
+    canvas.addEventListener("mousedown", function(event) {
+        pressed = true;
+    });
+
+    canvas.addEventListener("mousemove", function(event) {
+        if (pressed) {
+            var rect = canvas.getBoundingClientRect();
+            var dx = event.clientX - rect.left - centerX;
+            var dy = event.clientY - rect.top - centerY;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > radius) {
+                var angle = Math.atan2(dy, dx);
+                dx = radius * Math.cos(angle);
+                dy = radius * Math.sin(angle);
             }
-            lastText = txt;
-            if (!sendTimeout) {
-                var ms = lastSend !== undefined ? 30 - (now - lastSend) : 30;
-                if (ms < 0)
-                    ms = 0;
-                sendTimeout = setTimeout(() => {
-                    sendTimeout = null;
-                    send(lastText);
-                }, ms);
-            }
+
+            knobX = centerX + dx;
+            knobY = centerY + dy;
+            drawJoystick();
         }
+    });
 
-        var joy = new JoyStick('joyDiv');
-        var potSlider = document.getElementById("potSlider");
+    canvas.addEventListener("mouseup", function() {
+        pressed = false;
+        knobX = centerX;
+        knobY = centerY;
+        drawJoystick();
+    });
 
-        function getMotorValues(nJoyX, nJoyY, sliderValue) {
-            var nMotMixL;
-            var nMotMixR;
-            var fPivYLimit = 32.0;
+    canvas.addEventListener("mouseleave", function() {
+        pressed = false;
+        knobX = centerX;
+        knobY = centerY;
+        drawJoystick();
+    });
 
-            var nMotPremixL;
-            var nMotPremixR;
-            var nPivSpeed;
-            var fPivScale;
-
-            if (nJoyY >= 0) {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-                nMotPremixR = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-            } else {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-                nMotPremixR = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-            }
-
-            nMotPremixL = nMotPremixL * nJoyY / 100.0;
-            nMotPremixR = nMotPremixR * nJoyY / 100.0;
-
-            nPivSpeed = nJoyX;
-            fPivScale = (Math.abs(nJoyY) > fPivYLimit) ? 0.0 : (1.0 - Math.abs(nJoyY) / fPivYLimit);
-
-            nMotMixL = (1.0 - fPivScale) * nMotPremixL + fPivScale * (nPivSpeed);
-            nMotMixR = (1.0 - fPivScale) * nMotPremixR + fPivScale * (-nPivSpeed);
-
-            return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
-        }
-
-        potSlider.oninput = function() {
-            var sliderValue = potSlider.value;
-            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-        }
-
-        function sendEmergencyStop() {
-            try {
-                ws.send("EMERGENCY_STOP");
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
-        setInterval(function () {
-            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
-        }, 300);
-    </script>
+    drawJoystick();
+};
+</script>
 </body>
 </html>
