@@ -17,8 +17,8 @@
         }
 
         #app-container {
-            width: 844px; /* iPhone 13 height in landscape mode */
-            height: 390px; /* iPhone 13 width in landscape mode */
+            width: 844px;
+            height: 390px;
             background-color: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 20px;
@@ -43,13 +43,11 @@
         #slider {
             -webkit-appearance: none;
             appearance: none;
-            width: 30%;
-            height: 50px;
-            transform: rotate(-90deg); /* Rotate slider to vertical */
-            margin-top: 120px;
-            margin-left: -260px;
-            border-radius: 50px;
-            background: linear-gradient(to right,green, orange, yellow, red) ;
+            width: 50px;
+            height: 300px;
+            margin-top: 0px;
+            border-radius: 10px;
+            background: linear-gradient(to right, green, orange, yellow, red);
             outline: none;
             cursor: pointer;
         }
@@ -58,22 +56,22 @@
             -webkit-appearance: none;
             appearance: none;
             width: 40px;
-            height: 80px;
-            border-radius: 50%;
+            height: 40px;
             background: black;
             cursor: pointer;
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
         }
 
         #joystick-container {
-            width: 200px; /* Ensure width */
-            height: 200px; /* Ensure height */
-            background-color: transparent; /* Transparent background */
-            position: absolute; /* Position joystick in front */
-            top: 50%; /* Center the joystick vertically */
-            left: 70%; /* Center the joystick horizontally */
-            transform: translate(-50%, -50%); /* Adjust positioning */
-            z-index: 10; /* Ensure joystick is on top */
+            width: 200px;
+            height: 200px;
+            background-color: transparent;
+            position: absolute;
+            top: 50%;
+            left: 70%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
         }
 
         #status-box {
@@ -98,8 +96,13 @@
             margin-top: 50px;
         }
 
+        #emergency-button:hover {
+            background-color: darkred;
+        }
+
+
         #text1 {
-            margin-top: -150px;
+            margin-top: 20px;
             margin-left: 50px;
             font-size: 20px;
             text-align: left;
@@ -107,7 +110,7 @@
         }
 
         #text2 {
-            margin-top: -150px;
+            margin-top: 20px;
             margin-left: 30px;
             padding: 50px;
             font-size: 20px;
@@ -116,11 +119,11 @@
         }
 
         #slider-value {
-            margin-bottom:-100px;
-            margin-left: 170px;
             font-size: 18px;
             color: #333;
             position: absolute;
+            left: 20px;
+            top: 320px;
             font-style: italic;
         }
     </style>
@@ -130,8 +133,8 @@
         <h1>Drone Controller</h1>
         <div id="controller">
             <p id="text1">Slider Control</p>
-            <input placeholder="slider" type="range" id="slider" min="0" max="100" value="0">
-            <div id="slider-value">Value: XX</div>
+            <input type="range" id="slider" min="0" max="100" value="0">
+            <div id="slider-value">Value: 0</div>
             <div id="status-box">Disconnected</div>
             <p id="text2">Joystick Control</p>
             <div id="joystick-container"></div>
