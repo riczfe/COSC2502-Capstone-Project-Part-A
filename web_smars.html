@@ -160,7 +160,7 @@
             border: 10px solid rgba(136, 136, 136, .5);
             border-radius: 50%;
             touch-action: none;
-            user-select: none;
+         
         }
 
         #item:active {
@@ -202,7 +202,7 @@
 
             // Handle slider change
             slider.addEventListener("input", function() {
-                console.log("Slider value:", slider.value);
+                console.log("Slider value changed:", slider.value);
                 sliderValueDisplay.textContent = "Value: " + slider.value;
                 sendSliderValueToDrone(slider.value);
             });
@@ -210,6 +210,7 @@
             // Add slider input event for drone control
             slider.oninput = function() {
                 var sliderValue = slider.value;
+                console.log("Slider input detected, controlling drone:", sliderValue);
                 send(getMotorValues(joystick.GetX(), joystick.GetY(), sliderValue));
             };
 
@@ -278,7 +279,7 @@
                     // Draw internal circle
                     context.beginPath();
                     context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
-                    var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
+                    var gradient = context.createRadialGradient(knobX, knobY, radius / 4, knobX, knobY, radius / 2);
                     gradient.addColorStop(0, internalFillColor);
                     gradient.addColorStop(1, internalStrokeColor);
                     context.fillStyle = gradient;
