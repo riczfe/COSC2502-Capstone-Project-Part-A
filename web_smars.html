@@ -43,13 +43,14 @@
         #slider {
             -webkit-appearance: none;
             appearance: none;
-            width: 50px;
-            height: 300px;
+            width: 300px;
+            height: 50px;
             margin-top: 0px;
             border-radius: 10px;
             background: linear-gradient(to right, green, orange, yellow, red);
             outline: none;
             cursor: pointer;
+            transform: rotate(-90deg);
         }
 
         #slider::-webkit-slider-thumb {
@@ -95,11 +96,6 @@
             border-radius: 20px;
             margin-top: 50px;
         }
-
-        #emergency-button:hover {
-            background-color: darkred;
-        }
-
 
         #text1 {
             margin-top: 20px;
@@ -151,6 +147,7 @@
             slider.addEventListener("input", function() {
                 sliderValueDisplay.textContent = "Value: " + slider.value;
                 console.log("Slider value:", slider.value);
+                // Here you can add your code to send the slider value to the drone
             });
         });
 
