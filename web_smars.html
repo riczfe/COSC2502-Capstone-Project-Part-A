@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Controller</title>
+    <title>Integrated Drone Controller</title>
     <style>
         body {
             display: flex;
@@ -43,25 +43,35 @@
         #slider {
             -webkit-appearance: none;
             appearance: none;
-            width: 300px;
+            width: 30%;
             height: 50px;
-            margin-top: 0px;
-            border-radius: 10px;
-            background: linear-gradient(to right, green, orange, yellow, red);
+            transform: rotate(-90deg);
+            margin-top: 120px;
+            margin-left: -260px;
+            border-radius: 50px;
+            background: linear-gradient(to right,green, orange, yellow, red);
             outline: none;
             cursor: pointer;
-            transform: rotate(-90deg);
         }
 
         #slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 40px;
-            height: 40px;
+            height: 80px;
+            border-radius: 50%;
             background: black;
             cursor: pointer;
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+
+        #slider::-moz-range-thumb {
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
         }
 
         #joystick-container {
@@ -95,32 +105,71 @@
             cursor: pointer;
             border-radius: 20px;
             margin-top: 50px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        #emergency-button:hover {
+            background-color: darkred;
         }
 
         #text1 {
-            margin-top: 20px;
+            margin-top: -150px;
             margin-left: 50px;
             font-size: 20px;
             text-align: left;
             justify-content: left;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
 
         #text2 {
-            margin-top: 20px;
+            margin-top: -150px;
             margin-left: 30px;
             padding: 50px;
             font-size: 20px;
             text-align: right;
             justify-content: right;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
 
         #slider-value {
+            margin-bottom: -100px;
+            margin-left: 170px;
             font-size: 18px;
             color: #333;
             position: absolute;
-            left: 20px;
-            top: 320px;
             font-style: italic;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        #container {
+            width: 100%;
+            height: 49vh;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 7px;
+            touch-action: none;
+        }
+
+        #item {
+            width: 100px;
+            height: 100px;
+            background-color: rgb(245, 230, 99);
+            border: 10px solid rgba(136, 136, 136, .5);
+            border-radius: 50%;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #item:active {
+            background-color: rgba(168, 218, 220, 1.00);
+        }
+
+        #item:hover {
+            cursor: pointer;
+            border-width: 20px;
         }
     </style>
 </head>
@@ -129,7 +178,7 @@
         <h1>Drone Controller</h1>
         <div id="controller">
             <p id="text1">Slider Control</p>
-            <input type="range" id="slider" min="0" max="100" value="0">
+            <input placeholder="slider" type="range" id="slider" min="0" max="100" value="0">
             <div id="slider-value">Value: 0</div>
             <div id="status-box">Disconnected</div>
             <p id="text2">Joystick Control</p>
@@ -137,119 +186,155 @@
         </div>
         <button id="emergency-button">Emergency Stop</button>
     </div>
-
-    <script type="text/javascript">
-        // Slider control
+    <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var slider = document.getElementById("slider");
-            var sliderValueDisplay = document.getElementById("slider-value");
-
-            slider.addEventListener("input", function() {
-                sliderValueDisplay.textContent = "Value: " + slider.value;
-                console.log("Slider value:", slider.value);
-                // Here you can add your code to send the slider value to the drone
-            });
-        });
-
-        // Joystick control
-        var JoyStick = function(containerId, options) {
-            options = options || {};
-            var title = options.title || "joystick",
-                width = options.width || 200,
-                height = options.height || 200,
-                internalFillColor = options.internalFillColor || "#000000",
-                internalStrokeColor = options.internalStrokeColor || "#ffffff",
-                externalStrokeColor = options.externalStrokeColor || "#52e36e",
-                container = document.getElementById(containerId),
-                canvas = document.createElement("canvas");
-
-            canvas.id = title;
-            canvas.width = width;
-            canvas.height = height;
-            container.appendChild(canvas);
-
-            var context = canvas.getContext("2d"),
-                pressed = false,
-                radius = canvas.width / 2 - 20,
-                centerX = canvas.width / 2,
-                centerY = canvas.height / 2,
-                knobX = centerX,
-                knobY = centerY;
-
-            function drawJoystick() {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Draw external circle
-                context.beginPath();
-                context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                context.lineWidth = options.externalLineWidth || 2;
-                context.strokeStyle = externalStrokeColor;
-                context.stroke();
-                context.fillStyle = options.externalFillColor || "#52e36e";
-                context.fill();
-
-                // Draw internal circle
-                context.beginPath();
-                context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
-                context.fillStyle = internalFillColor;
-                context.fill();
-                context.lineWidth = options.internalLineWidth || 2;
-                context.strokeStyle = internalStrokeColor;
-                context.stroke();
-            }
-
-            canvas.addEventListener("mousedown", function() {
-                pressed = true;
-            });
-
-            canvas.addEventListener("mousemove", function(event) {
-                if (pressed) {
-                    var rect = canvas.getBoundingClientRect();
-                    var dx = event.clientX - rect.left - centerX;
-                    var dy = event.clientY - rect.top - centerY;
-                    var distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance > radius) {
-                        var angle = Math.atan2(dy, dx);
-                        dx = radius * Math.cos(angle);
-                        dy = radius * Math.sin(angle);
-                    }
-
-                    knobX = centerX + dx;
-                    knobY = centerY + dy;
-                    drawJoystick();
-                }
-            });
-
-            canvas.addEventListener("mouseup", function() {
-                pressed = false;
-                knobX = centerX;
-                knobY = centerY;
-                drawJoystick();
-            });
-
-            canvas.addEventListener("mouseleave", function() {
-                pressed = false;
-                knobX = centerX;
-                knobY = centerY;
-                drawJoystick();
-            });
-
-            drawJoystick();
-        };
-
-        // Initialize Joystick
-        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize the joystick
             var joystick = new JoyStick("joystick-container", {
                 internalFillColor: "#000000",
                 internalStrokeColor: "#ffffff",
                 externalStrokeColor: "#52e36e"
             });
-        });
 
-        // Emergency button action
-        document.getElementById("emergency-button").addEventListener("click", function() {
-            console.log("Emergency stop triggered!");
+            // Initialize the slider to 0
+            const slider = document.getElementById("slider");
+            const sliderValueDisplay = document.getElementById("slider-value");
+            slider.value = 0;
+
+            // Handle slider change
+            slider.addEventListener("input", function() {
+                console.log("Slider value:", slider.value);
+                sliderValueDisplay.textContent = "Value: " + slider.value;
+                sendSliderValueToDrone(slider.value);
+            });
+
+            // Add slider input event for drone control
+            slider.oninput = function() {
+                var sliderValue = slider.value;
+                send(getMotorValues(joystick.GetX(), joystick.GetY(), sliderValue));
+            };
+
+            // Handle emergency button click
+            const emergencyButton = document.getElementById("emergency-button");
+            emergencyButton.addEventListener("click", function() {
+                console.log("Emergency stop triggered!");
+                sendEmergencyStopToDrone();
+            });
+
+            // Placeholder functions for drone communication
+            function sendSliderValueToDrone(value) {
+                console.log("Sending slider value to drone:", value);
+            }
+
+            function sendEmergencyStopToDrone() {
+                console.log("Sending emergency stop to drone");
+            }
+
+            function getMotorValues(x, y, sliderValue) {
+                // Placeholder for motor value calculation
+                console.log(`X: ${x}, Y: ${y}, Slider: ${sliderValue}`);
+                return { x: x, y: y, slider: sliderValue };
+            }
+
+            // Joystick implementation
+            var JoyStick = function(containerId, options) {
+                options = options || {};
+                var title = options.title || "joystick",
+                    width = options.width || 200,
+                    height = options.height || 200,
+                    internalFillColor = options.internalFillColor || "#000000",
+                    internalLineWidth = options.internalLineWidth || 2,
+                    internalStrokeColor = options.internalStrokeColor || "#C70039",
+                    externalLineWidth = options.externalLineWidth || 2,
+                    externalStrokeColor = options.externalStrokeColor || "#900C3F",
+                    externalFillColor = options.externalFillColor || "#52e36e",
+                    container = document.getElementById(containerId),
+                    canvas = document.createElement("canvas");
+
+                canvas.id = title;
+                canvas.width = width;
+                canvas.height = height;
+                container.appendChild(canvas);
+
+                var context = canvas.getContext("2d"),
+                    pressed = false,
+                    radius = canvas.width / 2 - 20,
+                    centerX = canvas.width / 2,
+                    centerY = canvas.height / 2,
+                    knobX = centerX,
+                    knobY = centerY;
+
+                function drawJoystick() {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw external circle
+                    context.beginPath();
+                    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    context.lineWidth = externalLineWidth;
+                    context.strokeStyle = externalStrokeColor;
+                    context.stroke();
+                    context.fillStyle = externalFillColor;
+                    context.fill();
+
+                    // Draw internal circle
+                    context.beginPath();
+                    context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
+                    var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
+                    gradient.addColorStop(0, internalFillColor);
+                    gradient.addColorStop(1, internalStrokeColor);
+                    context.fillStyle = gradient;
+                    context.fill();
+                    context.lineWidth = internalLineWidth;
+                    context.strokeStyle = internalStrokeColor;
+                    context.stroke();
+                }
+
+                canvas.addEventListener("mousedown", function(event) {
+                    pressed = true;
+                    updateJoystick(event);
+                });
+
+                canvas.addEventListener("mousemove", function(event) {
+                    if (pressed) {
+                        updateJoystick(event);
+                    }
+                });
+
+                canvas.addEventListener("mouseup", function() {
+                    pressed = false;
+                    knobX = centerX;
+                    knobY = centerY;
+                    drawJoystick();
+                });
+
+                function updateJoystick(event) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mouseX = event.clientX - rect.left;
+                    var mouseY = event.clientY - rect.top;
+                    var deltaX = mouseX - centerX;
+                    var deltaY = mouseY - centerY;
+                    var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                    if (distance < radius) {
+                        knobX = mouseX;
+                        knobY = mouseY;
+                    } else {
+                        knobX = centerX + (deltaX / distance) * radius;
+                        knobY = centerY + (deltaY / distance) * radius;
+                    }
+
+                    drawJoystick();
+                }
+
+                drawJoystick();
+
+                this.GetX = function() {
+                    return (knobX - centerX) / radius;
+                };
+
+                this.GetY = function() {
+                    return (knobY - centerY) / radius;
+                };
+            };
         });
     </script>
 </body>
