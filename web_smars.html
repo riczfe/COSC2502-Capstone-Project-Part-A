@@ -145,7 +145,7 @@
                 sliderValueDisplay.textContent = "Value: " + slider.value;
                 send(getMotorValues(joy.GetX(), joy.GetY(), slider.value));
             });
-            
+
             function getMotorValues(nJoyX, nJoyY, sliderValue) {
             var nMotMixL;
             var nMotMixR;
@@ -219,7 +219,7 @@
                     context.beginPath();
                     context.arc(centerX, centerY, radius, 0, Math.PI * 2);
                     context.lineWidth = 2;
-                    context.strokeStyle = externalStrokeC   olor;
+                    context.strokeStyle = externalStrokeColor;
                     context.stroke();
                     context.fillStyle = "#52e36e";
                     context.fill();
