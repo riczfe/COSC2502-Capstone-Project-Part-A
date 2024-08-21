@@ -47,7 +47,7 @@
         appearance: none;
         width: 30%;
         height: 50px;
-        transform: rotate(-90deg); /* Rotate slider to vertical */
+        /* transform: rotate(-90deg); Rotate slider to vertical */
         margin-top: 120px;
         margin-left: -260px;
         border-radius: 50px;
@@ -136,8 +136,8 @@
     
     }
     #slider-value {
-        margin-bottom:-100px;
-        margin-left: 170px;
+        margin-bottom:-30px;
+        margin-left: 80px;
         font-size: 18px;
         color: #333;
         position: absolute;
@@ -392,11 +392,6 @@
         setInterval(function () {
             send(getMotorValues(joy.GetX(), joy.GetY(), slider.value));
         }, 300);
-
-        // Initialize the slider to 0
-        const vslider = document.getElementById("slider");
-        const sliderValueDisplay = document.getElementById("slider-value");
-        vslider.value = 0; // Ensure slider starts at 0
 
         // Handle slider change
         slider.addEventListener("input", function() {
