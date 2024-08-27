@@ -40,13 +40,12 @@
     width: 17%;
     height: 40px;
     transform: rotate(-90deg); /* Rotate slider to vertical */
-    margin-top: 150px;
-    margin-left: 0px;
     border-radius: 50px;
     background: linear-gradient(to right,green, orange, yellow, red) ;
     outline: none;
     cursor: pointer;
     position: absolute;
+    top: 400px;
 }
 h1 {
     margin-top: 0;
@@ -81,6 +80,7 @@ h1 {
     position: absolute;
     font-style: italic;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    top: 400px;
 }
 #status-box {
     background-color: grey;
@@ -89,8 +89,8 @@ h1 {
     padding: 10px 20px;
     font-size: 16px;
     border-radius: 20px;
-    margin-top: 50px;
-    margin-left: 350px;
+    right: 700px;
+    bottom: 450px;
     position: absolute;
 }
 
@@ -102,7 +102,9 @@ h1 {
     font-size: 16px;
     cursor: pointer;
     border-radius: 20px;
-    margin-top: 50px;
+    right: 0px;
+    position: relative;
+    top: 150px;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
@@ -111,7 +113,7 @@ h1 {
 }
 
 #text1 {
-    margin-top: -150px;
+    margin-top: 40px;
     margin-left: 80px;
     font-size: 20px;
     text-align: left;
@@ -119,170 +121,274 @@ h1 {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     position: absolute;
 }
+#text2 {
+    position: absolute;
+    right: 420px;
+    font-size: 20px;
+    text-align: right;
+    justify-content: right;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
 
 #joyDiv{
     width:200px;
     height:200px;
-    margin:right;
+    margin:50px;
+    position: absolute;
+    right: 350px;
+    bottom: 200px;
 }
     </style>
     <script type="text/javascript">
-        var JoyStick = function(t, e) {
-            e = e || {};
-            var i = e.title || "joystick",
-                n = e.width || 0,
-                o = e.height || 0,
-                h = e.internalFillColor || "#00AA00",
-                r = e.internalLineWidth || 2,
-                d = e.internalStrokeColor || "#003300",
-                a = e.externalLineWidth || 2,
-                l = e.externalStrokeColor || "#008000",
-                c = document.getElementById(t),
-                u = document.createElement("canvas");
+        // var JoyStick = function(t, e) {
+        //     e = e || {};
+        //     var i = e.title || "joystick",
+        //         n = e.width || 0,
+        //         o = e.height || 0,
+        //         h = e.internalFillColor || "#00AA00",
+        //         r = e.internalLineWidth || 2,
+        //         d = e.internalStrokeColor || "#003300",
+        //         a = e.externalLineWidth || 2,
+        //         l = e.externalStrokeColor || "#008000",
+        //         c = document.getElementById(t),
+        //         u = document.createElement("canvas");
 
-            u.id = i;
-            if (n == 0) n = c.clientWidth;
-            if (o == 0) o = c.clientHeight;
-            u.width = n;
-            u.height = o;
-            c.appendChild(u);
+        //     u.id = i;
+        //     if (n == 0) n = c.clientWidth;
+        //     if (o == 0) o = c.clientHeight;
+        //     u.width = n;
+        //     u.height = o;
+        //     c.appendChild(u);
 
-            var s = u.getContext("2d"),
-                f = 0,
-                v = 2 * Math.PI,
-                g = (u.width - 110) / 2,
-                w = g + 5,
-                C = g + 30,
-                m = u.width / 2,
-                p = u.height / 2,
-                L = u.width / 10,
-                E = -1 * L,
-                S = u.height / 10,
-                k = -1 * S,
-                W = m,
-                G = p;
+        //     var s = u.getContext("2d"),
+        //         f = 0,
+        //         v = 2 * Math.PI,
+        //         g = (u.width - 110) / 2,
+        //         w = g + 5,
+        //         C = g + 30,
+        //         m = u.width / 2,
+        //         p = u.height / 2,
+        //         L = u.width / 10,
+        //         E = -1 * L,
+        //         S = u.height / 10,
+        //         k = -1 * S,
+        //         W = m,
+        //         G = p;
 
-            function x() {
-                s.beginPath();
-                s.arc(m, p, C, 0, v, !1);
-                s.lineWidth = a;
-                s.strokeStyle = l;
-                s.stroke();
+        //     function x() {
+        //         s.beginPath();
+        //         s.arc(m, p, C, 0, v, !1);
+        //         s.lineWidth = a;
+        //         s.strokeStyle = l;
+        //         s.stroke();
+        //     }
+
+        //     function y() {
+        //         s.beginPath();
+        //         if (W < g) W = w;
+        //         if (W + g > u.width) W = u.width - w;
+        //         if (G < g) G = w;
+        //         if (G + g > u.height) G = u.height - w;
+        //         s.arc(W, G, g, 0, v, !1);
+        //         var t = s.createRadialGradient(m, p, 5, m, p, 200);
+        //         t.addColorStop(0, h);
+        //         t.addColorStop(1, d);
+        //         s.fillStyle = t;
+        //         s.fill();
+        //         s.lineWidth = r;
+        //         s.strokeStyle = d;
+        //         s.stroke();
+        //     }
+
+        //     if ("ontouchstart" in document.documentElement) {
+        //         u.addEventListener("touchstart", function() {
+        //             f = 1;
+        //         }, !1);
+        //         u.addEventListener("touchmove", function(t) {
+        //             t.preventDefault();
+        //             if (f == 1) {
+        //                 W = t.touches[0].pageX;
+        //                 G = t.touches[0].pageY;
+        //                 W -= u.offsetLeft;
+        //                 G -= u.offsetTop;
+        //                 s.clearRect(0, 0, u.width, u.height);
+        //                 x();
+        //                 y();
+        //             }
+        //         }, !1);
+        //         u.addEventListener("touchend", function() {
+        //             f = 0;
+        //             W = m;
+        //             G = p;
+        //             s.clearRect(0, 0, u.width, u.height);
+        //             x();
+        //             y();
+        //         }, !1);
+        //     } else {
+        //         u.addEventListener("mousedown", function() {
+        //             f = 1;
+        //         }, !1);
+        //         u.addEventListener("mousemove", function(t) {
+        //             if (f == 1) {
+        //                 W = t.pageX;
+        //                 G = t.pageY;
+        //                 W -= u.offsetLeft;
+        //                 G -= u.offsetTop;
+        //                 s.clearRect(0, 0, u.width, u.height);
+        //                 x();
+        //                 y();
+        //             }
+        //         }, !1);
+        //         u.addEventListener("mouseup", function() {
+        //             f = 0;
+        //             W = m;
+        //             G = p;
+        //             s.clearRect(0, 0, u.width, u.height);
+        //             x();
+        //             y();
+        //         }, !1);
+        //     }
+
+        //     x();
+        //     y();
+
+        //     this.GetWidth = function() {
+        //         return u.width;
+        //     }
+        //     this.GetHeight = function() {
+        //         return u.height;
+        //     }
+        //     this.GetPosX = function() {
+        //         return W;
+        //     }
+        //     this.GetPosY = function() {
+        //         return G;
+        //     }
+        //     this.GetX = function() {
+        //         return ((W - m) / w * 100).toFixed();
+        //     }
+        //     this.GetY = function() {
+        //         return ((G - p) / w * -100).toFixed();
+        //     }
+        //     this.GetDir = function() {
+        //         var t = "",
+        //             e = W - m,
+        //             i = G - p;
+        //         if (i >= k && i <= S) t = "C";
+        //         if (i < k) t = "N";
+        //         if (i > S) t = "S";
+        //         if (e < E) t += "W";
+        //         if (e > L) t += "E";
+        //         return t;
+        //     }
+        // };
+        // Joystick implementation
+var JoyStick = function(containerId, options) {
+    options = options || {};
+    var title = options.title || "joystick",
+        width = options.width || 200,
+        height = options.height || 200,
+        internalFillColor = options.internalFillColor || "#000000", // Change internal fill color here
+        internalLineWidth = options.internalLineWidth || 2,
+        internalStrokeColor = options.internalStrokeColor || "#C70039", // Change internal stroke color here
+        externalLineWidth = options.externalLineWidth || 2,
+        externalStrokeColor = options.externalStrokeColor || "#900C3F", // Change external stroke color here
+        externalFillColor = options.externalFillColor || "#52e36e", // New external fill color
+        container = document.getElementById(containerId),
+        canvas = document.createElement("canvas");
+
+    canvas.id = title;
+    canvas.width = width;
+    canvas.height = height;
+    container.appendChild(canvas);
+
+    var context = canvas.getContext("2d"),
+        pressed = false,
+        radius = canvas.width / 2 - 20,
+        centerX = canvas.width / 2,
+        centerY = canvas.height / 2,
+        knobX = centerX,
+        knobY = centerY;
+
+    function drawJoystick() {   
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+         // Draw external circle
+         context.beginPath();
+         context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+         context.lineWidth = externalLineWidth;
+         context.strokeStyle = externalStrokeColor;
+         context.stroke();
+         context.fillStyle = externalFillColor; // Set external fill color
+         context.fill(); // Fill the external circle
+ 
+         // Draw internal circle
+         context.beginPath();
+         context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
+         var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
+         gradient.addColorStop(0, internalFillColor);
+        //  gradient.addColorStop(1, internalStrokeColor); 
+         context.fillStyle = gradient;
+         context.fill();
+         context.lineWidth = internalLineWidth;
+         context.strokeStyle = internalStrokeColor;
+         context.stroke();
+     }
+
+    canvas.addEventListener("mousedown", function(event) {
+        pressed = true;
+    });
+
+    canvas.addEventListener("mousemove", function(event) {
+        if (pressed) {
+            var rect = canvas.getBoundingClientRect();
+            var dx = event.clientX - rect.left - centerX;
+            var dy = event.clientY - rect.top - centerY;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > radius) {
+                var angle = Math.atan2(dy, dx);
+                dx = radius * Math.cos(angle);
+                dy = radius * Math.sin(angle);
             }
 
-            function y() {
-                s.beginPath();
-                if (W < g) W = w;
-                if (W + g > u.width) W = u.width - w;
-                if (G < g) G = w;
-                if (G + g > u.height) G = u.height - w;
-                s.arc(W, G, g, 0, v, !1);
-                var t = s.createRadialGradient(m, p, 5, m, p, 200);
-                t.addColorStop(0, h);
-                t.addColorStop(1, d);
-                s.fillStyle = t;
-                s.fill();
-                s.lineWidth = r;
-                s.strokeStyle = d;
-                s.stroke();
-            }
+            knobX = centerX + dx;
+            knobY = centerY + dy;
+            drawJoystick();
+        }
+    });
 
-            if ("ontouchstart" in document.documentElement) {
-                u.addEventListener("touchstart", function() {
-                    f = 1;
-                }, !1);
-                u.addEventListener("touchmove", function(t) {
-                    t.preventDefault();
-                    if (f == 1) {
-                        W = t.touches[0].pageX;
-                        G = t.touches[0].pageY;
-                        W -= u.offsetLeft;
-                        G -= u.offsetTop;
-                        s.clearRect(0, 0, u.width, u.height);
-                        x();
-                        y();
-                    }
-                }, !1);
-                u.addEventListener("touchend", function() {
-                    f = 0;
-                    W = m;
-                    G = p;
-                    s.clearRect(0, 0, u.width, u.height);
-                    x();
-                    y();
-                }, !1);
-            } else {
-                u.addEventListener("mousedown", function() {
-                    f = 1;
-                }, !1);
-                u.addEventListener("mousemove", function(t) {
-                    if (f == 1) {
-                        W = t.pageX;
-                        G = t.pageY;
-                        W -= u.offsetLeft;
-                        G -= u.offsetTop;
-                        s.clearRect(0, 0, u.width, u.height);
-                        x();
-                        y();
-                    }
-                }, !1);
-                u.addEventListener("mouseup", function() {
-                    f = 0;
-                    W = m;
-                    G = p;
-                    s.clearRect(0, 0, u.width, u.height);
-                    x();
-                    y();
-                }, !1);
-            }
+    canvas.addEventListener("mouseup", function() {
+        pressed = false;
+        knobX = centerX;
+        knobY = centerY;
+        drawJoystick();
+    });
 
-            x();
-            y();
+    canvas.addEventListener("mouseleave", function() {
+        pressed = false;
+        knobX = centerX;
+        knobY = centerY;
+        drawJoystick();
+    });
 
-            this.GetWidth = function() {
-                return u.width;
-            }
-            this.GetHeight = function() {
-                return u.height;
-            }
-            this.GetPosX = function() {
-                return W;
-            }
-            this.GetPosY = function() {
-                return G;
-            }
-            this.GetX = function() {
-                return ((W - m) / w * 100).toFixed();
-            }
-            this.GetY = function() {
-                return ((G - p) / w * -100).toFixed();
-            }
-            this.GetDir = function() {
-                var t = "",
-                    e = W - m,
-                    i = G - p;
-                if (i >= k && i <= S) t = "C";
-                if (i < k) t = "N";
-                if (i > S) t = "S";
-                if (e < E) t += "W";
-                if (e > L) t += "E";
-                return t;
-            }
-        };
+    drawJoystick();
+};
     </script>
 </head>
 <body>
     <div id="app-container">
         <h1>Drone Controller</h1>
+        <div id="joyDiv" ></div>
         <div id="controller">
-            <div id="joyDiv" ></div>
+            
                 <p id="text1">Slider Control</p>
                 <input placeholder="slider" type="range" id="potSlider" min="0" max="100" value="0">
                 <div id="slider-value">Value: XX</div>
             <div id="status-box">Disconnected</div>
 
-                <!-- <p id="text2">Joystick Control</p>
-                <div id="joystick-container"></div> -->
+                <p id="text2">Joystick Control</p>
+                <!-- <div id="joystick-container"></div> -->
 
         </div>
         <button id="emergency-button">Emergency Stop</button>
@@ -363,11 +469,6 @@ h1 {
             send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
             console.log("Slider value:", sliderValue);
         }
-
-        console.log
-
-
-        
         
         function sendEmergencyStop() {
             try {
