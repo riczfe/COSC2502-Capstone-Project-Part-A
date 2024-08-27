@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no' />
-    <meta charset="utf-8" />
-    <title>Joystick Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Controller</title>
     <style>
         #container {
             width: 100%;
@@ -202,7 +202,7 @@
     <div id='outerContainer'>
         <div style="height: 40vh;"></div>
         <div id="joyDiv" style="width:200px;height:200px;margin:auto;"></div>
-        <input type="range" min="0" max="100" value="50" class="slider" id="potSlider">
+        <input type="range" min="0" max="100" value="0" class="slider" id="potSlider">
         <button id="emergencyButton" onclick="sendEmergencyStop()">Emergency Stop</button>
     </div>
     <script>
