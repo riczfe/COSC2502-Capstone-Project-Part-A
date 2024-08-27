@@ -17,7 +17,51 @@
             touch-action: none;
         }
 
-        #item {
+        #controller {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+#potSlider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30%;
+    height: 50px;
+    transform: rotate(-90deg); /* Rotate slider to vertical */
+    margin-top: 120px;
+    margin-left: -260px;
+    border-radius: 50px;
+    background: linear-gradient(to right,green, orange, yellow, red) ;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Custom slider thumb */
+#potSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 80px;
+    border-radius: 50%;
+    background: black;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+#potSlider::-moz-range-thumb {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+        /* #item {
             width: 100px;
             height: 100px;
             background-color: rgb(245, 230, 99);
@@ -51,7 +95,52 @@
             border-radius: 5px;
             font-size: 20px;
             cursor: pointer;
-        }
+        } */
+        #slider-value {
+    margin-bottom:-100px;
+    margin-left: 170px;
+    font-size: 18px;
+    color: #333;
+    position: absolute;
+    font-style: italic;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+#status-box {
+    background-color: grey;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 20px;
+    margin-top: 50px;
+    margin-left: 45px;
+}
+
+#emergency-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 20px 50px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 20px;
+    margin-top: 50px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#emergency-button:hover {
+    background-color: darkred;
+}
+
+#text1 {
+    margin-top: -150px;
+    margin-left: 50px;
+    font-size: 20px;
+    text-align: left;
+    justify-content: left;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+}
     </style>
     <script type="text/javascript">
         var JoyStick = function(t, e) {
@@ -199,12 +288,22 @@
     </script>
 </head>
 <body>
-    <div id='outerContainer'>
-        <div style="height: 40vh;"></div>
-        <div id="joyDiv" style="width:200px;height:200px;margin:auto;"></div>
-        <input type="range" min="0" max="100" value="0" class="slider" id="potSlider">
-        <button id="emergencyButton" onclick="sendEmergencyStop()">Emergency Stop</button>
+    <div id="app-container">
+        <h1>Drone Controller</h1>
+        <div id="controller">
+
+                <p id="text1">Slider Control</p>
+                <input placeholder="slider" type="range" id="potSlider" min="0" max="100" value="0">
+                <div id="slider-value">Value: XX</div>
+            <div id="status-box">Disconnected</div>
+
+                <!-- <p id="text2">Joystick Control</p>
+                <div id="joystick-container"></div> -->
+
+        </div>
+        <button id="emergency-button">Emergency Stop</button>
     </div>
+    
     <script>
         const view = document.getElementById('stream');
         const WS_URL = "ws://" + window.location.host + ":82";
