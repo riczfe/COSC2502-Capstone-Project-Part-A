@@ -33,7 +33,7 @@
     height: 50px;
     transform: rotate(-90deg); /* Rotate slider to vertical */
     margin-top: 120px;
-    margin-left: -260px;
+    margin-left: 50px;
     border-radius: 50px;
     background: linear-gradient(to right,green, orange, yellow, red) ;
     outline: none;
@@ -134,12 +134,18 @@
 
 #text1 {
     margin-top: -150px;
-    margin-left: 50px;
+    margin-left: 550px;
     font-size: 20px;
     text-align: left;
     justify-content: left;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 
+}
+
+#joyDiv{
+    width:200px;
+    height:200px;
+    margin:auto;
 }
     </style>
     <script type="text/javascript">
@@ -291,7 +297,7 @@
     <div id="app-container">
         <h1>Drone Controller</h1>
         <div id="controller">
-            <div id="joyDiv" style="width:200px;height:200px;margin:auto;"></div>
+            <div id="joyDiv" ></div>
                 <p id="text1">Slider Control</p>
                 <input placeholder="slider" type="range" id="potSlider" min="0" max="100" value="0">
                 <div id="slider-value">Value: XX</div>
@@ -373,11 +379,18 @@
             return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
         }
 
+        // potSlider.oninput = function() {
+        //     var sliderValue = potSlider.value;
+        //     send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
+        // }
         potSlider.oninput = function() {
-            var sliderValue = potSlider.value;
-            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-        }
+    var sliderValue = potSlider.value;
+    document.getElementById("slider-value").innerText = "Value: " + sliderValue;
+    send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
+}
 
+        
+        
         function sendEmergencyStop() {
             try {
                 ws.send("EMERGENCY_STOP");
