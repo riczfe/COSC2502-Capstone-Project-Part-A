@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drone Controller</title>
     <style>
-        #container {
-            width: 100%;
-            height: 49vh;
-            background-color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 7px;
-            touch-action: none;
-        }
-
+ body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: white;
+    background-image: url('droneimage.jpg');
+}
         #controller {
     display: flex;
     flex-direction: row;
@@ -24,22 +22,35 @@
     justify-content: space-between;
     width: 100%;
 }
-
+#app-container {
+    width: 844px; /* iPhone 13 height in landscape mode */
+    height: 390px; /* iPhone 13 width in landscape mode */
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
 
 #potSlider {
     -webkit-appearance: none;
     appearance: none;
-    width: 30%;
-    height: 50px;
+    width: 17%;
+    height: 40px;
     transform: rotate(-90deg); /* Rotate slider to vertical */
-    margin-top: 120px;
-    margin-left: 50px;
+    margin-top: 150px;
+    margin-left: 0px;
     border-radius: 50px;
     background: linear-gradient(to right,green, orange, yellow, red) ;
     outline: none;
     cursor: pointer;
+    position: absolute;
 }
-
+h1 {
+    margin-top: 0;
+}
 /* Custom slider thumb */
 #potSlider::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -61,42 +72,8 @@
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
-        /* #item {
-            width: 100px;
-            height: 100px;
-            background-color: rgb(245, 230, 99);
-            border: 10px solid rgba(136, 136, 136, .5);
-            border-radius: 50%;
-            touch-action: none;
-            user-select: none;
-        }
-
-        #item:active {
-            background-color: rgba(168, 218, 220, 1.00);
-        }
-
-        #item:hover {
-            cursor: pointer;
-            border-width: 20px;
-        }
-
-        #area {
-            position: fixed;
-            right: 0;
-            top: 0;
-        }
-
-        #emergencyButton {
-            width: 100%;
-            height: 40px;
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
-        } */
-        #slider-value {
+    
+#slider-value {
     margin-bottom:-100px;
     margin-left: 170px;
     font-size: 18px;
@@ -113,7 +90,8 @@
     font-size: 16px;
     border-radius: 20px;
     margin-top: 50px;
-    margin-left: 45px;
+    margin-left: 350px;
+    position: absolute;
 }
 
 #emergency-button {
@@ -134,18 +112,18 @@
 
 #text1 {
     margin-top: -150px;
-    margin-left: 550px;
+    margin-left: 80px;
     font-size: 20px;
     text-align: left;
     justify-content: left;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-
+    position: absolute;
 }
 
 #joyDiv{
     width:200px;
     height:200px;
-    margin:auto;
+    margin:right;
 }
     </style>
     <script type="text/javascript">
