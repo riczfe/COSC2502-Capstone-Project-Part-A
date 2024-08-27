@@ -357,15 +357,15 @@ h1 {
             return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
         }
 
-        // potSlider.oninput = function() {
-        //     var sliderValue = potSlider.value;
-        //     send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-        // }
         potSlider.oninput = function() {
-    var sliderValue = potSlider.value;
-    document.getElementById("slider-value").innerText = "Value: " + sliderValue;
-    send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-}
+            var sliderValue = potSlider.value;
+            document.getElementById("slider-value").innerText = "Value: " + sliderValue;
+            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
+            console.log("Slider value:", sliderValue);
+        }
+
+        console.log
+
 
         
         
