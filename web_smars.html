@@ -409,42 +409,38 @@ h1 {
     </div>
     
     <script>
+        const statusBox = document.getElementById("status-box");
         const view = document.getElementById('stream');
-        const WS_URL = "ws://" + window.location.host + ":82";
-        const ws = new WebSocket(WS_URL);
-        
-        ws.onmessage = message => {
-            if (message.data instanceof Blob) {
-                var urlObject = URL.createObjectURL(message.data);
-                view.src = urlObject;
-            }
-        };
+        try{
+const WS_URL = "ws://" + window.location.host + ":82";
+const ws = new WebSocket(WS_URL);
 
-        ws.onopen = function() {
+ws.onopen = function() {
     // Connection opened, update status box
     statusBox.innerText = "Connected";
     statusBox.classList.remove("disconnected");
     statusBox.classList.add("connected");
-        };
+};
 
-        ws.onclose = function() {
-            // Connection closed, update status box
-            statusBox.innerText = "Disconnected";
-            statusBox.classList.remove("connected");
-            statusBox.classList.add("disconnected");
-        };
+ws.onclose = function() {
+    // Connection closed, update status box
+    statusBox.innerText = "Disconnected";
+    statusBox.classList.remove("connected");
+    statusBox.classList.add("disconnected");
+};
 
-        ws.onerror = function(error) {
-            console.error("WebSocket Error: ", error);
-            // Handle the error as needed
-        };
+ws.onerror = function(error) {
+    console.error("WebSocket Error: ", error);
+    // Handle the error as needed
+};
 
-        ws.onmessage = function(message) {
-            if (message.data instanceof Blob) {
-                var urlObject = URL.createObjectURL(message.data);
-                view.src = urlObject;
-            }
-        };
+ws.onmessage = function(message) {
+    if (message.data instanceof Blob) {
+        var urlObject = URL.createObjectURL(message.data);
+        view.src = urlObject;
+    }
+};
+
 
         var lastText, lastSend, sendTimeout;
         function send(txt) {
@@ -469,6 +465,9 @@ h1 {
                 }, ms);
             }
         }
+    }catch(e){
+    console.log(e);
+}
 
         var joy = new JoyStick('joyDiv');
         var potSlider = document.getElementById("potSlider");
