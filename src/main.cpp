@@ -1,4 +1,4 @@
-#include <Arduino.h>       // Arduino library
+#include <Arduino.h>       
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoWebsockets.h>
@@ -71,14 +71,14 @@ void handle_message(WebsocketsMessage msg)
     String data = msg.data();
     if (data == "EMERGENCY_STOP")
     {
-        sendEmergencyStop();
+        sendEmergencyStop();  // Call the function to stop all motors
         return;
     }
 
-    commaIndex = data.indexOf(',');
-    LValue = data.substring(0, commaIndex).toInt();
+    int commaIndex = data.indexOf(',');
+    int LValue = data.substring(0, commaIndex).toInt();
     int secondCommaIndex = data.indexOf(',', commaIndex + 1);
-    RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
+    int RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
     int sliderValue = data.substring(secondCommaIndex + 1).toInt();
 
     motor1.drive(LValue);
