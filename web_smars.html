@@ -399,12 +399,26 @@
                 potSlider.oninput();  // Trigger the slider input event to send the updated value
                 console.log("Emergency Stop Activated, Slider set to 0");
             });
-
+        
+        // Function to send joystick data
+        function sendJoystickData() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const joyX = joy.GetX(); // Joystick X-axis value
+                const joyY = joy.GetY(); // Joystick Y-axis value
+                const message = `${joyX},${joyY}`; // Format the message as X,Y
+                ws.send(message);
+                console.log("Sent joystick data:", message);
+            } else {
+                console.log("WebSocket is not connected. Cannot send data.");
+            }
+        }
+        
         // Periodically send motor values
         setInterval(function () {
             send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
         }, 300);
-</script>
+        setInterval(sendJoystickData, 300);
 
+</script>
 </body>
 </html>
