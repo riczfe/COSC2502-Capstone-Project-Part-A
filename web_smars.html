@@ -393,19 +393,12 @@
             send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
             console.log("Slider value:", sliderValue);
         }
-        // Add an event listener to the emergency stop button
-        document.getElementById("emergency-button").addEventListener("click", function() {
-            sendEmergencyStop();  // Call the function to send the emergency stop signal
-        });
-
-        // Function to send emergency stop command
-        function sendEmergencyStop() {
-            if (ws && ws.readyState === WebSocket.OPEN) {  // Check if WebSocket is connected
-                ws.send("EMERGENCY_STOP");  // Send "EMERGENCY_STOP" message via WebSocket
-            } else {
-                console.log("WebSocket is not connected. Cannot send emergency stop.");
-            }
-        }
+         // Add an event listener to the emergency stop button
+            document.getElementById("emergency-button").addEventListener("click", function() {
+                potSlider.value = 0;  // Set potSlider value to 0
+                potSlider.oninput();  // Trigger the slider input event to send the updated value
+                console.log("Emergency Stop Activated, Slider set to 0");
+            });
 
         // Periodically send motor values
         setInterval(function () {
