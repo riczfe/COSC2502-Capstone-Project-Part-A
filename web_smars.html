@@ -292,102 +292,125 @@
         <button id="emergency-button">Emergency Stop</button>
     </div>
 
-        <script>
-    const statusBox = document.getElementById("status-box");
-    let ws;  // Declare ws outside the try block
+    <script>
+        const statusBox = document.getElementById("status-box");
+        const view = document.getElementById('stream');
+        let ws;  // Declare ws outside the try block
 
-    try {
-        const WS_URL = "ws://" + window.location.host + ":82";
-        ws = new WebSocket(WS_URL);
+        try {
+            const WS_URL = "ws://" + window.location.host + ":82";
+            ws = new WebSocket(WS_URL);
 
-        ws.onopen = function() {
-            // Connection opened, update status box
-            statusBox.innerText = "Connected";
-            statusBox.classList.remove("disconnected");
-            statusBox.classList.add("connected");
-        };
+            ws.onopen = function() {
+                // Connection opened, update status box
+                statusBox.innerText = "Connected";
+                statusBox.classList.remove("disconnected");
+                statusBox.classList.add("connected");
+            };
 
-        ws.onclose = function() {
-            // Connection closed, update status box
-            statusBox.innerText = "Disconnected";
-            statusBox.classList.remove("connected");
-            statusBox.classList.add("disconnected");
-        };
+            ws.onclose = function() {
+                // Connection closed, update status box
+                statusBox.innerText = "Disconnected";
+                statusBox.classList.remove("connected");
+                statusBox.classList.add("disconnected");
+            };
 
-        ws.onerror = function(error) {
-            console.error("WebSocket Error: ", error);
-            // Handle the error as needed
-        };
-    } catch(e) {
+            ws.onerror = function(error) {
+                console.error("WebSocket Error: ", error);
+                // Handle the error as needed
+            };
+            
+            ws.onmessage = function(message) {
+            if (message.data instanceof Blob) {
+                var urlObject = URL.createObjectURL(message.data);
+                view.src = urlObject;
+                }
+            };
+
+            var lastText, lastSend, sendTimeout;
+            function send(txt) {
+                var now = new Date().getTime();
+                if (lastSend === undefined || now - lastSend >= 30) {
+                    try {
+                        ws.send(txt);
+                        lastSend = new Date().getTime();
+                        return;
+                    } catch (e) {
+                        console.log(e);
+                    }
+                }
+                lastText = txt;
+                if (!sendTimeout) {
+                    var ms = lastSend !== undefined ? 30 - (now - lastSend) : 30;
+                    if (ms < 0)
+                        ms = 0;
+                    sendTimeout = setTimeout(() => {
+                        sendTimeout = null;
+                        send(lastText);
+                    }, ms);
+                }
+            }
+        }catch(e){
         console.log(e);
     }
 
-    var joy = new JoyStick('joyDiv');
-    var potSlider = document.getElementById("potSlider");
+        var joy = new JoyStick('joyDiv');
+        var potSlider = document.getElementById("potSlider");
 
-    function getMotorValues(nJoyX, nJoyY, sliderValue) {
-        var nMotMixL;
-        var nMotMixR;
-        var fPivYLimit = 32.0;
+        function getMotorValues(nJoyX, nJoyY, sliderValue) {
+            var nMotMixL;
+            var nMotMixR;
+            var fPivYLimit = 32.0;
 
-        var nMotPremixL;
-        var nMotPremixR;
-        var nPivSpeed;
-        var fPivScale;
+            var nMotPremixL;
+            var nMotPremixR;
+            var nPivSpeed;
+            var fPivScale;
 
-        if (nJoyY >= 0) {
-            nMotPremixL = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-            nMotPremixR = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-        } else {
-            nMotPremixL = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-            nMotPremixR = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
+            if (nJoyY >= 0) {
+                nMotPremixL = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
+                nMotPremixR = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
+            } else {
+                nMotPremixL = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
+                nMotPremixR = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
+            }
+
+            nMotPremixL = nMotPremixL * nJoyY / 100.0;
+            nMotPremixR = nMotPremixR * nJoyY / 100.0;
+
+            nPivSpeed = nJoyX;
+            fPivScale = (Math.abs(nJoyY) > fPivYLimit) ? 0.0 : (1.0 - Math.abs(nJoyY) / fPivYLimit);
+
+            nMotMixL = (1.0 - fPivScale) * nMotPremixL + fPivScale * (nPivSpeed);
+            nMotMixR = (1.0 - fPivScale) * nMotPremixR + fPivScale * (-nPivSpeed);
+
+            return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
         }
 
-        nMotPremixL = nMotPremixL * nJoyY / 100.0;
-        nMotPremixR = nMotPremixR * nJoyY / 100.0;
-
-        nPivSpeed = nJoyX;
-        fPivScale = (Math.abs(nJoyY) > fPivYLimit) ? 0.0 : (1.0 - Math.abs(nJoyY) / fPivYLimit);
-
-        nMotMixL = (1.0 - fPivScale) * nMotPremixL + fPivScale * (nPivSpeed);
-        nMotMixR = (1.0 - fPivScale) * nMotPremixR + fPivScale * (-nPivSpeed);
-
-        return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
-    }
-
-    // Function to send motor values via WebSocket
-    function sendMotorValues() {
-        if (ws && ws.readyState === WebSocket.OPEN) {  // Check if WebSocket is connected
+        potSlider.oninput = function() {
             var sliderValue = potSlider.value;
-            ws.send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-        } else {
-            console.log("WebSocket is not connected. Cannot send motor values.");
+            document.getElementById("slider-value").innerText = "Value: " + sliderValue;
+            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
+            console.log("Slider value:", sliderValue);
         }
-    }
+        // Add an event listener to the emergency stop button
+        document.getElementById("emergency-button").addEventListener("click", function() {
+            sendEmergencyStop();  // Call the function to send the emergency stop signal
+        });
 
-    // Update slider input event to use the new function
-    potSlider.oninput = function() {
-        sendMotorValues();
-    };
-
-    // Add an event listener to the emergency stop button
-    document.getElementById("emergency-button").addEventListener("click", function() {
-        sendEmergencyStop();  // Call the function to send the emergency stop signal
-    });
-
-    // Function to send emergency stop command
-    function sendEmergencyStop() {
-        if (ws && ws.readyState === WebSocket.OPEN) {  // Check if WebSocket is connected
-            ws.send("EMERGENCY_STOP");  // Send "EMERGENCY_STOP" message via WebSocket
-        } else {
-            console.log("WebSocket is not connected. Cannot send emergency stop.");
+        // Function to send emergency stop command
+        function sendEmergencyStop() {
+            if (ws && ws.readyState === WebSocket.OPEN) {  // Check if WebSocket is connected
+                ws.send("EMERGENCY_STOP");  // Send "EMERGENCY_STOP" message via WebSocket
+            } else {
+                console.log("WebSocket is not connected. Cannot send emergency stop.");
+            }
         }
-    }
 
-    // Periodically send motor values
-    setInterval(function () {
-        sendMotorValues();
-    }, 300);
+        // Periodically send motor values
+        setInterval(function () {
+            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
+        }, 300);
 </script>
 
 </body>
