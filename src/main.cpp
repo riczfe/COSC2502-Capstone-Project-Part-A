@@ -1,4 +1,4 @@
-#include <Arduino.h>       
+#include <Arduino.h>       // Arduino library
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoWebsockets.h>
@@ -71,14 +71,14 @@ void handle_message(WebsocketsMessage msg)
     String data = msg.data();
     if (data == "EMERGENCY_STOP")
     {
-        sendEmergencyStop();  // Call the function to stop all motors
+        sendEmergencyStop();
         return;
     }
 
-    int commaIndex = data.indexOf(',');
-    int LValue = data.substring(0, commaIndex).toInt();
+    commaIndex = data.indexOf(',');
+    LValue = data.substring(0, commaIndex).toInt();
     int secondCommaIndex = data.indexOf(',', commaIndex + 1);
-    int RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
+    RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
     int sliderValue = data.substring(secondCommaIndex + 1).toInt();
 
     motor1.drive(LValue);
@@ -271,54 +271,11 @@ void SerialDataWrite()
     }
 }
 
-// void sendEmergencyStop()
-// {
-//     ESC1.writeMicroseconds(MIN_SIGNAL);
-//     ESC2.writeMicroseconds(MIN_SIGNAL);
-//     ESC3.writeMicroseconds(MIN_SIGNAL);
-//     ESC4.writeMicroseconds(MIN_SIGNAL);
-//     Serial.println("Emergency Stop Activated!");
-// }
-void handle_message(WebsocketsMessage msg) {
-    String data = msg.data();
-    if (data == "EMERGENCY_STOP") {
-        sendEmergencyStop();
-        return;
-    }
- int commaIndex = data.indexOf(',');
-    int joyX = data.substring(0, commaIndex).toInt();  // Joystick X-axis
-    int joyY = data.substring(commaIndex + 1).toInt(); // Joystick Y-axis
-
-    // Map joystick values to PWM signals
-    int throttleBase = map(joyY, -100, 100, MIN_SIGNAL, MAX_SIGNAL);
-    int throttleAdjust = map(joyX, -100, 100, -200, 200); // Adjust range to create differential
-
-    // Calculate PWM for each motor
-    int ESC1_PWM = constrain(throttleBase + throttleAdjust, MIN_SIGNAL, MAX_SIGNAL);
-    int ESC2_PWM = constrain(throttleBase - throttleAdjust, MIN_SIGNAL, MAX_SIGNAL);
-    int ESC3_PWM = constrain(throttleBase + throttleAdjust, MIN_SIGNAL, MAX_SIGNAL);
-    int ESC4_PWM = constrain(throttleBase - throttleAdjust, MIN_SIGNAL, MAX_SIGNAL);
-
-    // Set the throttle for each motor
-    ESC1.writeMicroseconds(ESC1_PWM);
-    ESC2.writeMicroseconds(ESC2_PWM);
-    ESC3.writeMicroseconds(ESC3_PWM);
-    ESC4.writeMicroseconds(ESC4_PWM);
-
-    ESC1_value = ESC1_PWM;
-    ESC2_value = ESC2_PWM;
-    ESC3_value = ESC3_PWM;
-    ESC4_value = ESC4_PWM;
-}
-
-void loop() {
-    auto client = server.accept();
-    client.onMessage(handle_message);
-    while (client.available()) {
-        client.poll();
-        Get_MPUangle();
-        Get_accelgyro();
-        Compute_PID(); // Compute the PID output for x and y angle
-        SerialDataPrint();
-    }
+void sendEmergencyStop()
+{
+    ESC1.writeMicroseconds(MIN_SIGNAL);
+    ESC2.writeMicroseconds(MIN_SIGNAL);
+    ESC3.writeMicroseconds(MIN_SIGNAL);
+    ESC4.writeMicroseconds(MIN_SIGNAL);
+    Serial.println("Emergency Stop Activated!");
 }
