@@ -81,7 +81,7 @@
             position: absolute;
             font-style: italic;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-            top: 400px;
+            top: 300px;
         }
         #status-box {
             background-color: grey;
@@ -90,8 +90,8 @@
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 20px;
-            right: 700px;
-            bottom: 450px;
+            right: 690px;
+            bottom: 350px;
             position: absolute;
             margin: 0 -363px -40px;
         }
@@ -106,7 +106,7 @@
             border-radius: 20px;
             right: 0px;
             position: relative;
-            top: 150px;
+            top: 300px;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
 
@@ -153,8 +153,55 @@
             right: 350px;
             bottom: 200px;
             position: absolute;
+            left: -99999999px;
           
         }
+        #drone-controls {
+            position: absolute;
+            right: 60px;
+            top: 170px;
+            width: 200px; /* Increase the container size to fit larger buttons */
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-button {
+            width: 60px;  /* Increase button size */
+            height: 60px; /* Increase button size */
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;  /* Increase font size */
+            font-weight: bold;
+            color: white;
+            background-color: #333;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        #btn-up {
+            top: 0;
+        }
+
+        #btn-down {
+            bottom: 0;
+        }
+
+        #btn-left {
+            left: 0;
+        }
+
+        #btn-right {
+            right: 0;
+        }
+
+        .control-button:hover {
+            background-color: #555;
+        }
+
+
+
     </style>
     <script type="text/javascript">
         var JoyStick = function(containerId, options) {
@@ -291,8 +338,16 @@
             <input placeholder="slider" type="range" id="potSlider" min="0" max="100" value="0">
             <div id="slider-value">Value: XX</div>
             <div id="status-box" class="disconnected">Disconnected</div>
-            <p id="text2">Joystick Control</p>
+            <p id="text2">Direction Control</p>
         </div>
+        <div id="drone-controls">
+            <button class="control-button" id="btn-up">↑</button>
+            <button class="control-button" id="btn-left">←</button>
+            <button class="control-button" id="btn-right">→</button>
+            <button class="control-button" id="btn-down">↓</button>
+        </div>
+        
+        
         <button id="emergency-button">Emergency Stop</button>
     </div>
 
@@ -404,6 +459,25 @@
                 console.log("Emergency Stop Activated, Slider set to 0");
             });
         
+        // Button motor changing part
+        document.getElementById("btn-up").addEventListener("click", function() {
+            send("MOVE_UP");
+        });
+
+        document.getElementById("btn-down").addEventListener("click", function() {
+            send("MOVE_DOWN");
+        });
+
+        document.getElementById("btn-left").addEventListener("click", function() {
+            send("MOVE_LEFT");
+        });
+
+        document.getElementById("btn-right").addEventListener("click", function() {
+            send("MOVE_RIGHT");
+        });
+
+
+
         // Periodically send motor values
         setInterval(function () {
             send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));

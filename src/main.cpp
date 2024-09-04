@@ -96,6 +96,37 @@ void handle_message(WebsocketsMessage msg)
     ESC2_value = CtrlPWM;
     ESC3_value = CtrlPWM;
     ESC4_value = CtrlPWM;
+
+    //this part motor button
+     if (data == "MOVE_UP") {
+        // Increase throttle on motors for forward movement
+        ESC1.writeMicroseconds(ESC1_value + 100);
+        ESC2.writeMicroseconds(ESC2_value + 100);
+        ESC3.writeMicroseconds(ESC3_value - 100);
+        ESC4.writeMicroseconds(ESC4_value - 100);
+    }
+    else if (data == "MOVE_DOWN") {
+        // Decrease throttle on motors for backward movement
+        ESC1.writeMicroseconds(ESC1_value - 100);
+        ESC2.writeMicroseconds(ESC2_value - 100);
+        ESC3.writeMicroseconds(ESC3_value + 100);
+        ESC4.writeMicroseconds(ESC4_value + 100);
+    }
+    else if (data == "MOVE_LEFT") {
+        // Adjust motors for leftward movement
+        ESC1.writeMicroseconds(ESC1_value + 100);
+        ESC2.writeMicroseconds(ESC2_value - 100);
+        ESC3.writeMicroseconds(ESC3_value + 100);
+        ESC4.writeMicroseconds(ESC4_value - 100);
+    }
+    else if (data == "MOVE_RIGHT") {
+        // Adjust motors for rightward movement
+        ESC1.writeMicroseconds(ESC1_value - 100);
+        ESC2.writeMicroseconds(ESC2_value + 100);
+        ESC3.writeMicroseconds(ESC3_value - 100);
+        ESC4.writeMicroseconds(ESC4_value + 100);
+    }
+    //button
 }
 
 // ================================================================
@@ -279,3 +310,4 @@ void sendEmergencyStop()
     ESC4.writeMicroseconds(MIN_SIGNAL);
     Serial.println("Emergency Stop Activated!");
 }
+
