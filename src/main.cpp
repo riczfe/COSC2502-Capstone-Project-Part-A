@@ -99,33 +99,34 @@ void handle_message(WebsocketsMessage msg)
 
     //this part motor button
      if (data == "MOVE_UP") {
-        // Increase throttle on motors for forward movement
-        ESC1.writeMicroseconds(ESC1_value + 100);
-        ESC2.writeMicroseconds(ESC2_value + 100);
-        ESC3.writeMicroseconds(ESC3_value - 100);
-        ESC4.writeMicroseconds(ESC4_value - 100);
+        // Moving forward: Motors 1 and 4 move forward, 2 and 3 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
+        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
     }
     else if (data == "MOVE_DOWN") {
-        // Decrease throttle on motors for backward movement
-        ESC1.writeMicroseconds(ESC1_value - 100);
-        ESC2.writeMicroseconds(ESC2_value - 100);
-        ESC3.writeMicroseconds(ESC3_value + 100);
-        ESC4.writeMicroseconds(ESC4_value + 100);
+        // Moving backward: Motors 2 and 3 move forward, 1 and 4 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
+        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
     }
     else if (data == "MOVE_LEFT") {
-        // Adjust motors for leftward movement
-        ESC1.writeMicroseconds(ESC1_value + 100);
-        ESC2.writeMicroseconds(ESC2_value - 100);
-        ESC3.writeMicroseconds(ESC3_value + 100);
-        ESC4.writeMicroseconds(ESC4_value - 100);
+        // Moving left: Motors 1 and 2 move forward, 3 and 4 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
+        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
     }
     else if (data == "MOVE_RIGHT") {
-        // Adjust motors for rightward movement
-        ESC1.writeMicroseconds(ESC1_value - 100);
-        ESC2.writeMicroseconds(ESC2_value + 100);
-        ESC3.writeMicroseconds(ESC3_value - 100);
-        ESC4.writeMicroseconds(ESC4_value + 100);
+        // Moving right: Motors 3 and 4 move forward, 1 and 2 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
+        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
     }
+
     //button
 }
 
