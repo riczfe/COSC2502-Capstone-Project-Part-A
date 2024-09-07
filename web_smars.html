@@ -452,12 +452,14 @@
             send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
             console.log("Slider value:", sliderValue);
         }
-         // Add an event listener to the emergency stop button
-            document.getElementById("emergency-button").addEventListener("click", function() {
-                potSlider.value = 0;  // Set potSlider value to 0
-                potSlider.oninput();  // Trigger the slider input event to send the updated value
-                console.log("Emergency Stop Activated, Slider set to 0");
-            });
+            // Emergency stop button to reset all motors
+document.getElementById("emergency-button").addEventListener("click", function() {
+    potSlider.value = 0;  // Set potSlider value to 0
+    potSlider.oninput();  // Trigger the slider input event to send the updated value
+    motor1 = motor2 = motor3 = motor4 = 0;  // Turn off all motors
+    updateMotors();
+    console.log("Emergency Stop Activated, all motors turned off");
+});
         
         // Button motor changing part
         //// Function to send motor control command and log output to the console
@@ -511,19 +513,16 @@
     // Motor values for all four motors
     let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
 
-    // Function to update motor values and send them via WebSocket
-    function updateMotors() {
-        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
-        send(motorValues);  // Sending motor values to the WebSocket server
-        console.log(`Motor values: ${motorValues}`);
-    }
+  // Ensure motors are reset and not continuously updating if no input is detected
+let isMoving = false;
 
-   // Helper functions for motor control with limits
+// Helper functions for motor control with limits
 function setMotorValues(forward1, forward2, back1, back2) {
     motor1 = Math.max(0, motor1 + forward1);
     motor2 = Math.max(0, motor2 + forward2);
     motor3 = Math.max(0, motor3 + back1);
     motor4 = Math.max(0, motor4 + back2);
+    isMoving = true;
     updateMotors();
 }
 
@@ -546,15 +545,27 @@ document.getElementById("btn-down").addEventListener("mouseup", function() {
     resetMotors();
 });
 
-// Function to reset motors when no buttons are pressed
+// Reset motor values when no buttons are pressed
 function resetMotors() {
     const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
     motor1 = sliderValue;
     motor2 = sliderValue;
     motor3 = sliderValue;
     motor4 = sliderValue;
+    isMoving = false;
     updateMotors();
 }
+
+// Update motors only when a change is detected
+function updateMotors() {
+    if (isMoving) {
+        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+        send(motorValues);  // Sending motor values to the WebSocket server
+        console.log(`Motor values: ${motorValues}`);
+    }
+}
+
+
 
 // Ensure motors are reset when the page loads
 window.onload = resetMotors;
