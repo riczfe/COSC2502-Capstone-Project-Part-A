@@ -516,15 +516,14 @@ document.getElementById("emergency-button").addEventListener("click", function()
   // Ensure motors are reset and not continuously updating if no input is detected
 let isMoving = false;
 
-// Helper functions for motor control with limits
 function setMotorValues(forward1, forward2, back1, back2) {
-    motor1 = Math.max(0, motor1 + forward1);
-    motor2 = Math.max(0, motor2 + forward2);
-    motor3 = Math.max(0, motor3 + back1);
-    motor4 = Math.max(0, motor4 + back2);
-    isMoving = true;
-    updateMotors();
-}
+    motor1 += forward1;
+    motor2 += forward2;
+    motor3 += back1;
+    motor4 += back2;
+        updateMotors();  // Send updated ESC values
+    }
+
 
 // Event listeners for the directional buttons
 document.getElementById("btn-up").addEventListener("mousedown", function() {
