@@ -528,7 +528,7 @@ function setMotorValues(forward1, forward2, back1, back2) {
 
 // Event listeners for the directional buttons
 document.getElementById("btn-up").addEventListener("mousedown", function() {
-    setMotorValues(-5, 5, 5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
+    setMotorValues(-5, -5, -5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
     this.holdInterval = setInterval(() => setMotorValues(-5, 5, 5, -5), 100);
 });
 document.getElementById("btn-up").addEventListener("mouseup", function() {
@@ -537,13 +537,27 @@ document.getElementById("btn-up").addEventListener("mouseup", function() {
 });
 
 document.getElementById("btn-down").addEventListener("mousedown", function() {
-    setMotorValues(5, -5, -5, 5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+    setMotorValues(5, 5, 5, 5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
     this.holdInterval = setInterval(() => setMotorValues(5, -5, -5, 5), 100);
 });
 document.getElementById("btn-down").addEventListener("mouseup", function() {
     clearInterval(this.holdInterval);
     resetMotors();
 });
+document.getElementById("btn-left").addEventListener("mousedown", function() {
+        setEscValues(5, -5, 5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
+        this.holdInterval = setInterval(() => setEscValues(5, 5, -5, -5), 100);
+    });
+    document.getElementById("btn-left").addEventListener("mouseup", function() {
+        clearInterval(this.holdInterval);
+        resetEscValues();
+    });
+
+    document.getElementById("btn-right").addEventListener("mousedown", function() {
+        setEscValues(-5, 5, -5, 5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+        this.holdInterval = setInterval(() => setEscValues(-5, -5, 5, 5), 100);
+    });
+    document.getElementById("btn-right").add
 
 // Reset motor values when no buttons are pressed
 function resetMotors() {
