@@ -509,7 +509,7 @@
 
 //change 2
     // Motor values for all four motors
-    let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
+    let motor1 = sliderValue, motor2 = sliderValue, motor3 = sliderValue, motor4 = sliderValue;
 
     // Function to update motor values and send them via WebSocket
     function updateMotors() {
@@ -518,64 +518,47 @@
         console.log(`Motor values: ${motorValues}`);
     }
 
-    // Helper functions for motor control
-    function setMotorValues(forward1, forward2, back1, back2) {
-        motor1 += forward1;
-        motor2 += forward2;
-        motor3 += back1;
-        motor4 += back2;
-        updateMotors();
-    }
+   // Helper functions for motor control with limits
+function setMotorValues(forward1, forward2, back1, back2) {
+    motor1 = Math.max(0, motor1 + forward1);
+    motor2 = Math.max(0, motor2 + forward2);
+    motor3 = Math.max(0, motor3 + back1);
+    motor4 = Math.max(0, motor4 + back2);
+    updateMotors();
+}
 
-    // Event listeners for the directional buttons
-    document.getElementById("btn-up").addEventListener("mousedown", function() {
-        setMotorValues(-5, 5, 5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
-        this.holdInterval = setInterval(() => setMotorValues(-5, 5, 5, -5), 100);
-    });
-    document.getElementById("btn-up").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+// Event listeners for the directional buttons
+document.getElementById("btn-up").addEventListener("mousedown", function() {
+    setMotorValues(-5, 5, 5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
+    this.holdInterval = setInterval(() => setMotorValues(-5, 5, 5, -5), 100);
+});
+document.getElementById("btn-up").addEventListener("mouseup", function() {
+    clearInterval(this.holdInterval);
+    resetMotors();
+});
 
-    document.getElementById("btn-down").addEventListener("mousedown", function() {
-        setMotorValues(5, -5, -5, 5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
-        this.holdInterval = setInterval(() => setMotorValues(5, -5, -5, 5), 100);
-    });
-    document.getElementById("btn-down").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+document.getElementById("btn-down").addEventListener("mousedown", function() {
+    setMotorValues(5, -5, -5, 5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+    this.holdInterval = setInterval(() => setMotorValues(5, -5, -5, 5), 100);
+});
+document.getElementById("btn-down").addEventListener("mouseup", function() {
+    clearInterval(this.holdInterval);
+    resetMotors();
+});
 
-    document.getElementById("btn-left").addEventListener("mousedown", function() {
-        setMotorValues(5, 5, -5, -5);  // Left: Motor 4 and 3 decrease, 1 and 2 increase
-        this.holdInterval = setInterval(() => setMotorValues(5, 5, -5, -5), 100);
-    });
-    document.getElementById("btn-left").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+// Function to reset motors when no buttons are pressed
+function resetMotors() {
+    const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
+    motor1 = sliderValue;
+    motor2 = sliderValue;
+    motor3 = sliderValue;
+    motor4 = sliderValue;
+    updateMotors();
+}
 
-    document.getElementById("btn-right").addEventListener("mousedown", function() {
-        setMotorValues(-5, -5, 5, 5);  // Right: Motor 4 and 3 increase, 1 and 2 decrease
-        this.holdInterval = setInterval(() => setMotorValues(-5, -5, 5, 5), 100);
-    });
-    document.getElementById("btn-right").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+// Ensure motors are reset when the page loads
+window.onload = resetMotors;
 
-    // Reset motor values when no buttons are pressed
-    function resetMotors() {
-        const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
-        motor1 = sliderValue;
-        motor2 = sliderValue;
-        motor3 = sliderValue;
-        motor4 = sliderValue;
-        updateMotors();
-    }
-
-    // Ensure motors are reset when the page loads
-    window.onload = resetMotors;
 //change 2
 
 
