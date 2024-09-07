@@ -515,12 +515,23 @@ document.getElementById("emergency-button").addEventListener("click", function()
 
   // Ensure motors are reset and not continuously updating if no input is detected
 let isMoving = false;
+   
+    // Update motors only when a change is detected
+function updateMotors() {
+    if (isMoving) {
+        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+        send(motorValues);  // Sending motor values to the WebSocket server
+        console.log(`Motor values: ${motorValues}`);
+    }
+}
+
 
 function setMotorValues(forward1, forward2, back1, back2) {
     motor1 += forward1;
     motor2 += forward2;
     motor3 += back1;
     motor4 += back2;
+    isMoving = true;
         updateMotors();  // Send updated ESC values
     }
 
@@ -571,14 +582,6 @@ function resetMotors() {
     updateMotors();
 }
 
-// Update motors only when a change is detected
-function updateMotors() {
-    if (isMoving) {
-        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
-        send(motorValues);  // Sending motor values to the WebSocket server
-        console.log(`Motor values: ${motorValues}`);
-    }
-}
 
 
 
