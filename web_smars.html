@@ -512,7 +512,7 @@ document.getElementById("emergency-button").addEventListener("click", function()
 //change 2
     // Motor values for all four motors
     let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
-
+    console.log(`Motor values: ${motorValues}`);
   // Ensure motors are reset and not continuously updating if no input is detected
 let isMoving = false;
    
@@ -527,19 +527,20 @@ function updateMotors() {
 
 
 function setMotorValues(forward1, forward2, back1, back2) {
-    motor1 += forward1;
-    motor2 += forward2;
-    motor3 += back1;
-    motor4 += back2;
+    // Apply motor changes considering the clockwise and counterclockwise motor setup
+    motor1 = Math.min(potSlider.value, Math.max(0, motor1 + forward1)); // Clockwise motor 1
+    motor2 = Math.min(potSlider.value, Math.max(0, motor2 + forward2)); // Counterclockwise motor 2
+    motor3 = Math.min(potSlider.value, Math.max(0, motor3 + back1));    // Counterclockwise motor 3
+    motor4 = Math.min(potSlider.value, Math.max(0, motor4 + back2));    // Clockwise motor 4
+    
     isMoving = true;
-        updateMotors();  // Send updated ESC values
-    }
-
+    updateMotors();  // Send updated motor values
+}
 
 // Event listeners for the directional buttons
 document.getElementById("btn-up").addEventListener("mousedown", function() {
-    setMotorValues(-5, -5, -5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
-    this.holdInterval = setInterval(() => setMotorValues(-5, 5, 5, -5), 100);
+    setMotorValues(-5, +5, +5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
+    this.holdInterval = setInterval(() => setMotorValues(-5, +5, +5, -5), 100);
 });
 document.getElementById("btn-up").addEventListener("mouseup", function() {
     clearInterval(this.holdInterval);
@@ -547,16 +548,16 @@ document.getElementById("btn-up").addEventListener("mouseup", function() {
 });
 
 document.getElementById("btn-down").addEventListener("mousedown", function() {
-    setMotorValues(5, 5, 5, 5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
-    this.holdInterval = setInterval(() => setMotorValues(5, -5, -5, 5), 100);
+    setMotorValues(+5, -5, -5, +5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+    this.holdInterval = setInterval(() => setMotorValues(+5, -5, -5, +5), 100);
 });
 document.getElementById("btn-down").addEventListener("mouseup", function() {
     clearInterval(this.holdInterval);
     resetMotors();
 });
 document.getElementById("btn-left").addEventListener("mousedown", function() {
-    setMotorValues(5, -5, 5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
-        this.holdInterval = setInterval(() => setMotorValues(5, -5, 5, -5), 100);
+    setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
+        this.holdInterval = setInterval(() => setMotorValues(+5, -5, +5, -5), 100);
     });
     document.getElementById("btn-left").addEventListener("mouseup", function() {
         clearInterval(this.holdInterval);
@@ -564,23 +565,22 @@ document.getElementById("btn-left").addEventListener("mousedown", function() {
     });
 
     document.getElementById("btn-right").addEventListener("mousedown", function() {
-        setMotorValues(-5, 5, -5, 5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
-        this.holdInterval = setInterval(() => setMotorValues(-5, -5, 5, 5), 100);
+        setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+        this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
     });
     document.getElementById("btn-right").addEventListener("mouseup", function() {
         clearInterval(this.holdInterval);
         resetMotors();
     });
-// Reset motor values when no buttons are pressed
+
+// Ensure that motor values reset to the slider value when no buttons are pressed
 function resetMotors() {
     const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
-    motor1 = sliderValue;
-    motor2 = sliderValue;
-    motor3 = sliderValue;
-    motor4 = sliderValue;
+    motor1 = motor2 = motor3 = motor4 = sliderValue; // Set all motors to the slider value
     isMoving = false;
     updateMotors();
 }
+
 
 
 
