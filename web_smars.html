@@ -528,10 +528,10 @@ function updateMotors() {
 
 function setMotorValues(forward1, forward2, back1, back2) {
     // Apply motor changes considering the clockwise and counterclockwise motor setup
-    motor1 = Math.min(potSlider.value, Math.max(0, motor1 + forward1)); // Clockwise motor 1
-    motor2 = Math.min(potSlider.value, Math.max(0, motor2 + forward2)); // Counterclockwise motor 2
-    motor3 = Math.min(potSlider.value, Math.max(0, motor3 + back1));    // Counterclockwise motor 3
-    motor4 = Math.min(potSlider.value, Math.max(0, motor4 + back2));    // Clockwise motor 4
+    motor1 = Math.min(sliderValue, Math.max(0, motor1 + forward1)); // Clockwise motor 1
+    motor2 = Math.min(sliderValue, Math.max(0, motor2 + forward2)); // Counterclockwise motor 2
+    motor3 = Math.min(sliderValue, Math.max(0, motor3 + back1));    // Counterclockwise motor 3
+    motor4 = Math.min(sliderValue, Math.max(0, motor4 + back2));    // Clockwise motor 4
     
     isMoving = true;
     updateMotors();  // Send updated motor values
