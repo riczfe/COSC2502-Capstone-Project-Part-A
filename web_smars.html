@@ -544,20 +544,22 @@ document.getElementById("btn-down").addEventListener("mouseup", function() {
     resetMotors();
 });
 document.getElementById("btn-left").addEventListener("mousedown", function() {
-        setEscValues(5, -5, 5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
-        this.holdInterval = setInterval(() => setEscValues(5, 5, -5, -5), 100);
+    setMotorValues(5, -5, 5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
+        this.holdInterval = setInterval(() => setMotorValues(5, -5, 5, -5), 100);
     });
     document.getElementById("btn-left").addEventListener("mouseup", function() {
         clearInterval(this.holdInterval);
-        resetEscValues();
+        resetMotors();
     });
 
     document.getElementById("btn-right").addEventListener("mousedown", function() {
-        setEscValues(-5, 5, -5, 5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
-        this.holdInterval = setInterval(() => setEscValues(-5, -5, 5, 5), 100);
+        setMotorValues(-5, 5, -5, 5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+        this.holdInterval = setInterval(() => setMotorValues(-5, -5, 5, 5), 100);
     });
-    document.getElementById("btn-right").add
-
+    document.getElementById("btn-right").addEventListener("mouseup", function() {
+        clearInterval(this.holdInterval);
+        resetMotors();
+    });
 // Reset motor values when no buttons are pressed
 function resetMotors() {
     const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
