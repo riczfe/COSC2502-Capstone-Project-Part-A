@@ -20,7 +20,9 @@ Servo ESC3;
 Servo ESC4; // Define the ESC
 
 int CtrlPWM; // Control Signal for ESC (0 - 180 range)
-int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
+// int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
+int ESC1_value = 1500, ESC2_value = 1500, ESC3_value = 1500, ESC4_value = 1500;
+
 
 void Init_ESC();         // Function to init the ESC
 void WaitForKeyStroke(); // Function to interact with the serial monitor
@@ -261,6 +263,52 @@ void SerialDataPrint()
         }
     }
 }
+
+//part3
+// Function to move forward
+void moveForward() {
+    ESC1_value -= 10;
+    ESC4_value -= 10;
+    ESC2_value += 10;
+    ESC3_value += 10;
+    updateMotors();
+}
+
+// Function to move backward
+void moveBackward() {
+    ESC1_value += 10;
+    ESC4_value += 10;
+    ESC2_value -= 10;
+    ESC3_value -= 10;
+    updateMotors();
+}
+
+// Function to move left
+void moveLeft() {
+    ESC1_value += 10;
+    ESC2_value += 10;
+    ESC3_value -= 10;
+    ESC4_value -= 10;
+    updateMotors();
+}
+
+// Function to move right
+void moveRight() {
+    ESC1_value -= 10;
+    ESC2_value -= 10;
+    ESC3_value += 10;
+    ESC4_value += 10;
+    updateMotors();
+}
+
+// Function to send motor values to ESCs
+void updateMotors() {
+    ESC1.writeMicroseconds(ESC1_value);
+    ESC2.writeMicroseconds(ESC2_value);
+    ESC3.writeMicroseconds(ESC3_value);
+    ESC4.writeMicroseconds(ESC4_value);
+}
+//part3
 
 // ================================================================
 // Function to tune the PID parameters. For example:

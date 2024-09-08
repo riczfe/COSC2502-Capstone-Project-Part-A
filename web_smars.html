@@ -460,7 +460,127 @@ document.getElementById("emergency-button").addEventListener("click", function()
     updateMotors();
     console.log("Emergency Stop Activated, all motors turned off");
 });
-        
+
+//part4
+
+    // Motor values for all four motors
+    let ESC1_value = 1500, ESC2_value = 1500, ESC3_value = 1500, ESC4_value = 1500;
+    let isIncreasing = false;
+
+    // Get the maximum motor value from the slider
+    function getMaxMotorValue() {
+        return parseInt(document.getElementById("potSlider").value);
+    }
+
+    // Function to update motor values based on direction
+    function setMotorValues(esc1_delta, esc2_delta, esc3_delta, esc4_delta) {
+        const max_value = getMaxMotorValue();
+
+        // Apply motor changes with a limit based on the slider value
+        ESC1_value = Math.min(ESC1_value + esc1_delta, max_value);
+        ESC2_value = Math.min(ESC2_value + esc2_delta, max_value);
+        ESC3_value = Math.min(ESC3_value + esc3_delta, max_value);
+        ESC4_value = Math.min(ESC4_value + esc4_delta, max_value);
+
+        // Ensure motor values do not go below the minimum signal value
+        ESC1_value = Math.max(ESC1_value, MIN_SIGNAL);
+        ESC2_value = Math.max(ESC2_value, MIN_SIGNAL);
+        ESC3_value = Math.max(ESC3_value, MIN_SIGNAL);
+        ESC4_value = Math.max(ESC4_value, MIN_SIGNAL);
+
+        // Send the updated motor values to the ESP32
+        sendMotorValues();
+    }
+
+    // WebSocket function to send motor values to the server
+    function sendMotorValues() {
+        const motorValues = `${ESC1_value},${ESC2_value},${ESC3_value},${ESC4_value}`;
+        send(motorValues);  // Sending motor values to the WebSocket server
+        console.log(`Motor values: ${motorValues}`);
+    }
+
+    // Function to handle button hold and increase/decrease motor values over time
+    function handleButtonPress(esc1_delta, esc2_delta, esc3_delta, esc4_delta) {
+        isIncreasing = true;  // Start increasing motor values
+        function increaseMotorValues() {
+            if (isIncreasing) {
+                setMotorValues(esc1_delta, esc2_delta, esc3_delta, esc4_delta);
+                setTimeout(increaseMotorValues, 100);  // Adjust every 100ms
+            }
+        }
+        increaseMotorValues();  // Start increasing/decreasing motor values
+    }
+
+    // Stop adjusting motor values when the button is released
+    function stopButtonPress() {
+        isIncreasing = false;
+    }
+
+    // Event listeners for the directional buttons
+    document.getElementById("btn-up").addEventListener("mousedown", function() {
+        handleButtonPress(-10, +10, +10, -10);  // Forward: ESC1 and ESC4 decrease, ESC2 and ESC3 increase
+    });
+    document.getElementById("btn-up").addEventListener("mouseup", stopButtonPress);
+    document.getElementById("btn-up").addEventListener("mouseleave", stopButtonPress);  // In case the button is released outside
+
+    document.getElementById("btn-down").addEventListener("mousedown", function() {
+        handleButtonPress(+10, -10, -10, +10);  // Backward: ESC1 and ESC4 increase, ESC2 and ESC3 decrease
+    });
+    document.getElementById("btn-down").addEventListener("mouseup", stopButtonPress);
+    document.getElementById("btn-down").addEventListener("mouseleave", stopButtonPress);
+
+    document.getElementById("btn-left").addEventListener("mousedown", function() {
+        handleButtonPress(+10, +10, -10, -10);  // Left: ESC3 and ESC4 decrease, ESC1 and ESC2 increase
+    });
+    document.getElementById("btn-left").addEventListener("mouseup", stopButtonPress);
+    document.getElementById("btn-left").addEventListener("mouseleave", stopButtonPress);
+
+    document.getElementById("btn-right").addEventListener("mousedown", function() {
+        handleButtonPress(-10, -10, +10, +10);  // Right: ESC3 and ESC4 increase, ESC1 and ESC2 decrease
+    });
+    document.getElementById("btn-right").addEventListener("mouseup", stopButtonPress);
+    document.getElementById("btn-right").addEventListener("mouseleave", stopButtonPress);
+
+    // Emergency stop button to reset all motor values
+    document.getElementById("emergency-button").addEventListener("click", function() {
+        ESC1_value = ESC2_value = ESC3_value = ESC4_value = MIN_SIGNAL;  // Set all motor values to minimum
+        sendMotorValues();  // Send updated motor values
+        console.log("Emergency Stop Activated, all motors turned off");
+    });
+
+    // Reset all motor values when the page loads
+    window.onload = function() {
+        ESC1_value = ESC2_value = ESC3_value = ESC4_value = 1500;  // Default to middle values
+        sendMotorValues();  // Send initial motor values
+    };
+//PART4
+
+//part3
+//   // Event listeners for buttons
+//   document.getElementById("btn-up").addEventListener("mousedown", function() {
+//             sendCommand("forward");
+//         });
+
+//         document.getElementById("btn-down").addEventListener("mousedown", function() {
+//             sendCommand("backward");
+//         });
+
+//         document.getElementById("btn-left").addEventListener("mousedown", function() {
+//             sendCommand("left");
+//         });
+
+//         document.getElementById("btn-right").addEventListener("mousedown", function() {
+//             sendCommand("right");
+//         });
+
+//         // Emergency stop button to reset all motors
+//         document.getElementById("emergency-button").addEventListener("click", function() {
+//             sendCommand("emergencyStop");
+//         });
+//part3
+
+
+//part1
         // Button motor changing part
         //// Function to send motor control command and log output to the console
         // function sendCommandAndLog(command) {
@@ -507,84 +627,84 @@ document.getElementById("emergency-button").addEventListener("click", function()
         // document.getElementById("btn-right").addEventListener("mouseup", function() {
         //     clearInterval(this.holdInterval);
         // });
-        
+//part1
 
 //change 2
-    // Motor values for all four motors
-    let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
-  // Ensure motors are reset and not continuously updating if no input is detected
-let isMoving = false;
+//     // Motor values for all four motors
+//     let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
+//   // Ensure motors are reset and not continuously updating if no input is detected
+// let isMoving = false;
    
-    // Update motors only when a change is detected
-function updateMotors() {
-    if (isMoving) {
-        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
-        send(motorValues);  // Sending motor values to the WebSocket server
-        console.log(`Motor values: ${motorValues}`);
-    }
-}
+//     // Update motors only when a change is detected
+// function updateMotors() {
+//     if (isMoving) {
+//         const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+//         send(motorValues);  // Sending motor values to the WebSocket server
+//         console.log(`Motor values: ${motorValues}`);
+//     }
+// }
 
 
-function setMotorValues(forward1, forward2, back1, back2) {
-    // Apply motor changes considering the clockwise and counterclockwise motor setup
-    motor1 += forward1;
-    motor2 += forward2;
-    motor3 += back1;
-    motor4 += back2;
-    isMoving = true;
-    updateMotors();  // Send updated motor values
-}
+// function setMotorValues(forward1, forward2, back1, back2) {
+//     // Apply motor changes considering the clockwise and counterclockwise motor setup
+//     motor1 += forward1;
+//     motor2 += forward2;
+//     motor3 += back1;
+//     motor4 += back2;
+//     isMoving = true;
+//     updateMotors();  // Send updated motor values
+// }
 
-// Event listeners for the directional buttons
-document.getElementById("btn-up").addEventListener("mousedown", function() {
-    setMotorValues(-5, +5, +5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
-    this.holdInterval = setInterval(() => setMotorValues(-5, +5, +5, -5), 100);
-});
-document.getElementById("btn-up").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
+// // Event listeners for the directional buttons
+// document.getElementById("btn-up").addEventListener("mousedown", function() {
+//     setMotorValues(-5, +5, +5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
+//     this.holdInterval = setInterval(() => setMotorValues(-5, +5, +5, -5), 100);
+// });
+// document.getElementById("btn-up").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
 
-document.getElementById("btn-down").addEventListener("mousedown", function() {
-    setMotorValues(+5, -5, -5, +5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
-    this.holdInterval = setInterval(() => setMotorValues(+5, -5, -5, +5), 100);
-});
-document.getElementById("btn-down").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
+// document.getElementById("btn-down").addEventListener("mousedown", function() {
+//     setMotorValues(+5, -5, -5, +5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+//     this.holdInterval = setInterval(() => setMotorValues(+5, -5, -5, +5), 100);
+// });
+// document.getElementById("btn-down").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
 
-document.getElementById("btn-left").addEventListener("mousedown", function() {
-    setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
-    this.holdInterval = setInterval(() => setMotorValues(+5, +5, -5, -5), 100);
-});
-document.getElementById("btn-left").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
+// document.getElementById("btn-left").addEventListener("mousedown", function() {
+//     setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
+//     this.holdInterval = setInterval(() => setMotorValues(+5, +5, -5, -5), 100);
+// });
+// document.getElementById("btn-left").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
 
-document.getElementById("btn-right").addEventListener("mousedown", function() {
-    setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
-    this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
-});
-document.getElementById("btn-right").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
+// document.getElementById("btn-right").addEventListener("mousedown", function() {
+//     setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+//     this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
+// });
+// document.getElementById("btn-right").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
 
-// Ensure that motor values reset to the slider value when no buttons are pressed
-function resetMotors() {
-    const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
-    motor1 = motor2 = motor3 = motor4 = sliderValue; // Set all motors to the slider value
-    isMoving = false;
-    updateMotors();
-}
-
-
+// // Ensure that motor values reset to the slider value when no buttons are pressed
+// function resetMotors() {
+//     const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
+//     motor1 = motor2 = motor3 = motor4 = sliderValue; // Set all motors to the slider value
+//     isMoving = false;
+//     updateMotors();
+// }
 
 
-// Ensure motors are reset when the page loads
-window.onload = resetMotors;
+
+
+// // Ensure motors are reset when the page loads
+// window.onload = resetMotors;
 
 //change 2
 
