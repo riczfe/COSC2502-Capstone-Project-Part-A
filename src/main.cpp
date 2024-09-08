@@ -265,6 +265,7 @@ void SerialDataPrint()
 }
 
 //part3
+void updateMotors();  // Declaration
 // Function to move forward
 void moveForward() {
     ESC1_value -= 10;
