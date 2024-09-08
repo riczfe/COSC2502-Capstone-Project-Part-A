@@ -553,23 +553,24 @@ document.getElementById("btn-down").addEventListener("mouseup", function() {
     clearInterval(this.holdInterval);
     resetMotors();
 });
+
 document.getElementById("btn-left").addEventListener("mousedown", function() {
     setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
-        this.holdInterval = setInterval(() => setMotorValues(+5, -5, +5, -5), 100);
-    });
-    document.getElementById("btn-left").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+    this.holdInterval = setInterval(() => setMotorValues(+5, +5, -5, -5), 100);
+});
+document.getElementById("btn-left").addEventListener("mouseup", function() {
+    clearInterval(this.holdInterval);
+    resetMotors();
+});
 
-    document.getElementById("btn-right").addEventListener("mousedown", function() {
-        setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
-        this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
-    });
-    document.getElementById("btn-right").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+document.getElementById("btn-right").addEventListener("mousedown", function() {
+    setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+    this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
+});
+document.getElementById("btn-right").addEventListener("mouseup", function() {
+    clearInterval(this.holdInterval);
+    resetMotors();
+});
 
 // Ensure that motor values reset to the slider value when no buttons are pressed
 function resetMotors() {
@@ -578,7 +579,6 @@ function resetMotors() {
     isMoving = false;
     updateMotors();
 }
-
 
 
 
