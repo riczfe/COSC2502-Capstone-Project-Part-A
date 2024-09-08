@@ -20,8 +20,8 @@ Servo ESC3;
 Servo ESC4; // Define the ESC
 
 int CtrlPWM; // Control Signal for ESC (0 - 180 range)
-// int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
-int ESC1_value = 1500, ESC2_value = 1500, ESC3_value = 1500, ESC4_value = 1500;
+int ESC1_value, ESC2_value, ESC3_value, ESC4_value;
+// int ESC1_value = 1500, ESC2_value = 1500, ESC3_value = 1500, ESC4_value = 1500;
 
 
 void Init_ESC();         // Function to init the ESC
