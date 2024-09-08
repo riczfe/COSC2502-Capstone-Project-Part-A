@@ -265,50 +265,50 @@ void SerialDataPrint()
 }
 
 //part3
-void updateMotors();  // Declaration
-// Function to move forward
-void moveForward() {
-    ESC1_value -= 10;
-    ESC4_value -= 10;
-    ESC2_value += 10;
-    ESC3_value += 10;
-    updateMotors();
-}
+// void updateMotors();  // Declaration
+// // Function to move forward
+// void moveForward() {
+//     ESC1_value -= 10;
+//     ESC4_value -= 10;
+//     ESC2_value += 10;
+//     ESC3_value += 10;
+//     updateMotors();
+// }
 
-// Function to move backward
-void moveBackward() {
-    ESC1_value += 10;
-    ESC4_value += 10;
-    ESC2_value -= 10;
-    ESC3_value -= 10;
-    updateMotors();
-}
+// // Function to move backward
+// void moveBackward() {
+//     ESC1_value += 10;
+//     ESC4_value += 10;
+//     ESC2_value -= 10;
+//     ESC3_value -= 10;
+//     updateMotors();
+// }
 
-// Function to move left
-void moveLeft() {
-    ESC1_value += 10;
-    ESC2_value += 10;
-    ESC3_value -= 10;
-    ESC4_value -= 10;
-    updateMotors();
-}
+// // Function to move left
+// void moveLeft() {
+//     ESC1_value += 10;
+//     ESC2_value += 10;
+//     ESC3_value -= 10;
+//     ESC4_value -= 10;
+//     updateMotors();
+// }
 
-// Function to move right
-void moveRight() {
-    ESC1_value -= 10;
-    ESC2_value -= 10;
-    ESC3_value += 10;
-    ESC4_value += 10;
-    updateMotors();
-}
+// // Function to move right
+// void moveRight() {
+//     ESC1_value -= 10;
+//     ESC2_value -= 10;
+//     ESC3_value += 10;
+//     ESC4_value += 10;
+//     updateMotors();
+// }
 
-// Function to send motor values to ESCs
-void updateMotors() {
-    ESC1.writeMicroseconds(ESC1_value);
-    ESC2.writeMicroseconds(ESC2_value);
-    ESC3.writeMicroseconds(ESC3_value);
-    ESC4.writeMicroseconds(ESC4_value);
-}
+// // Function to send motor values to ESCs
+// void updateMotors() {
+//     ESC1.writeMicroseconds(ESC1_value);
+//     ESC2.writeMicroseconds(ESC2_value);
+//     ESC3.writeMicroseconds(ESC3_value);
+//     ESC4.writeMicroseconds(ESC4_value);
+// }
 //part3
 
 // ================================================================
