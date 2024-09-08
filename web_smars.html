@@ -466,6 +466,8 @@ document.getElementById("emergency-button").addEventListener("click", function()
     // Motor values for all four motors
     let ESC1_value = 1500, ESC2_value = 1500, ESC3_value = 1500, ESC4_value = 1500;
     let isIncreasing = false;
+    const MIN_SIGNAL = 1000;  // You can adjust this value based on your setup
+    const MAX_SIGNAL = 2000;  // Optional, if you have a maximum signal value
 
     // Get the maximum motor value from the slider
     function getMaxMotorValue() {
