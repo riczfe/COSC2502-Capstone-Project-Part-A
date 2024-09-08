@@ -83,8 +83,8 @@ void handle_message(WebsocketsMessage msg)
     RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
     int sliderValue = data.substring(secondCommaIndex + 1).toInt();
 
-    motor1.drive(LValue);
-    motor2.drive(RValue);
+    // motor1.drive(LValue);
+    // motor2.drive(RValue);
 
     // Ensure CtrlPWM is correctly mapped from sliderValue (0-100) to ESC range (1000-2000)
     CtrlPWM = map(sliderValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL);
@@ -361,3 +361,21 @@ void sendEmergencyStop()
     Serial.println("Emergency Stop Activated!");
 }
 
+//newcode1
+// Function in your `main.cpp`
+void setMotorValues(int motor1, int motor2, int motor3, int motor4, int sliderValue) {
+    // Ensure motor values do not exceed slider value
+    if (motor1 > sliderValue) motor1 = sliderValue;
+    if (motor2 > sliderValue) motor2 = sliderValue;
+    if (motor3 > sliderValue) motor3 = sliderValue;
+    if (motor4 > sliderValue) motor4 = sliderValue;
+
+    // Print motor values (for debugging, replace with your motor control code)
+    Serial.print("Motor 1: "); Serial.println(motor1);
+    Serial.print("Motor 2: "); Serial.println(motor2);
+    Serial.print("Motor 3: "); Serial.println(motor3);
+    Serial.print("Motor 4: "); Serial.println(motor4);
+
+    // Add the logic to control your motors here
+}
+//endnewcode1
