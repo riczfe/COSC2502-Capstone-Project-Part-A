@@ -100,34 +100,34 @@ void handle_message(WebsocketsMessage msg)
     ESC4_value = CtrlPWM;
 
     //this part motor button
-    //  if (data == "MOVE_UP") {
-    //     // Moving forward: Motors 1 and 4 move forward, 2 and 3 decrease to move backward
-    //     ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
-    //     ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
-    //     ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
-    //     ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
-    // }
-    // else if (data == "MOVE_DOWN") {
-    //     // Moving backward: Motors 2 and 3 move forward, 1 and 4 decrease to move backward
-    //     ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
-    //     ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
-    //     ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
-    //     ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
-    // }
-    // else if (data == "MOVE_LEFT") {
-    //     // Moving left: Motors 1 and 2 move forward, 3 and 4 decrease to move backward
-    //     ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
-    //     ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
-    //     ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
-    //     ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
-    // }
-    // else if (data == "MOVE_RIGHT") {
-    //     // Moving right: Motors 3 and 4 move forward, 1 and 2 decrease to move backward
-    //     ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
-    //     ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
-    //     ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
-    //     ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
-    // }
+     if (data == "MOVE_UP") {
+        // Moving forward: Motors 1 and 4 move forward, 2 and 3 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
+        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
+    }
+    else if (data == "MOVE_DOWN") {
+        // Moving backward: Motors 2 and 3 move forward, 1 and 4 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
+        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
+    }
+    else if (data == "MOVE_LEFT") {
+        // Moving left: Motors 1 and 2 move forward, 3 and 4 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
+        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
+    }
+    else if (data == "MOVE_RIGHT") {
+        // Moving right: Motors 3 and 4 move forward, 1 and 2 decrease to move backward
+        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
+        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
+    }
 
     //button
 }
@@ -362,20 +362,20 @@ void sendEmergencyStop()
 }
 
 //newcode1
-// Function in your `main.cpp`
-void setMotorValues(int motor1, int motor2, int motor3, int motor4, int sliderValue) {
-    // Ensure motor values do not exceed slider value
-    if (motor1 > sliderValue) motor1 = sliderValue;
-    if (motor2 > sliderValue) motor2 = sliderValue;
-    if (motor3 > sliderValue) motor3 = sliderValue;
-    if (motor4 > sliderValue) motor4 = sliderValue;
+// // Function in your `main.cpp`
+// void setMotorValues(int motor1, int motor2, int motor3, int motor4, int sliderValue) {
+//     // Ensure motor values do not exceed slider value
+//     if (motor1 > sliderValue) motor1 = sliderValue;
+//     if (motor2 > sliderValue) motor2 = sliderValue;
+//     if (motor3 > sliderValue) motor3 = sliderValue;
+//     if (motor4 > sliderValue) motor4 = sliderValue;
 
-    // Print motor values (for debugging, replace with your motor control code)
-    Serial.print("Motor 1: "); Serial.println(motor1);
-    Serial.print("Motor 2: "); Serial.println(motor2);
-    Serial.print("Motor 3: "); Serial.println(motor3);
-    Serial.print("Motor 4: "); Serial.println(motor4);
+//     // Print motor values (for debugging, replace with your motor control code)
+//     Serial.print("Motor 1: "); Serial.println(motor1);
+//     Serial.print("Motor 2: "); Serial.println(motor2);
+//     Serial.print("Motor 3: "); Serial.println(motor3);
+//     Serial.print("Motor 4: "); Serial.println(motor4);
 
-    // Add the logic to control your motors here
-}
-//endnewcode1
+//     // Add the logic to control your motors here
+// }
+// //endnewcode1
