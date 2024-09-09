@@ -457,7 +457,6 @@ document.getElementById("emergency-button").addEventListener("click", function()
     potSlider.value = 0;  // Set potSlider value to 0
     potSlider.oninput();  // Trigger the slider input event to send the updated value
     motor1 = motor2 = motor3 = motor4 = 0;  // Turn off all motors
-    updateMotors();
     console.log("Emergency Stop Activated, all motors turned off");
 });
 
