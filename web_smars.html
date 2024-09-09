@@ -630,59 +630,58 @@ document.getElementById("emergency-button").addEventListener("click", function()
         //     clearInterval(this.holdInterval);
         // });
 //part1
-
 let holdInterval;  // Interval for continuous motor updates
+let motor1 = 0, motor2 = 0, motor3 = 0, motor4 = 0;  // Initial motor values
+let step = 1;  // Step value to increment or decrement motors gradually
 
 function updateMotorValues(direction) {
-    const sliderValue = parseInt(potSlider.value);  // Get the current slider value
+    const sliderValue = parseInt(potSlider.value);  // Get the current slider value (0 to 100)
 
-    let motor1 = 0, motor2 = 0, motor3 = 0, motor4 = 0;
-
-    // Set motor values based on the direction
+    // Update motor values based on direction
     switch (direction) {
         case 'forward':
-            motor1 = -1;  // Decrease motor 1
-            motor2 = 1;   // Increase motor 2
-            motor3 = 1;   // Increase motor 3
-            motor4 = -1;  // Decrease motor 4
+            motor1 = Math.max(motor1 - step, -sliderValue);  // Decrease motor 1 (min value -sliderValue)
+            motor2 = Math.min(motor2 + step, sliderValue);   // Increase motor 2 (max value sliderValue)
+            motor3 = Math.min(motor3 + step, sliderValue);   // Increase motor 3
+            motor4 = Math.max(motor4 - step, -sliderValue);  // Decrease motor 4
             break;
         case 'backward':
-            motor1 = 1;   // Increase motor 1
-            motor2 = -1;  // Decrease motor 2
-            motor3 = -1;  // Decrease motor 3
-            motor4 = 1;   // Increase motor 4
+            motor1 = Math.min(motor1 + step, sliderValue);   // Increase motor 1
+            motor2 = Math.max(motor2 - step, -sliderValue);  // Decrease motor 2
+            motor3 = Math.max(motor3 - step, -sliderValue);  // Decrease motor 3
+            motor4 = Math.min(motor4 + step, sliderValue);   // Increase motor 4
             break;
         case 'right':
-            motor1 = -1;  // Decrease motor 1
-            motor2 = -1;  // Decrease motor 2
-            motor3 = 1;   // Increase motor 3
-            motor4 = 1;   // Increase motor 4
+            motor1 = Math.max(motor1 - step, -sliderValue);  // Decrease motor 1
+            motor2 = Math.max(motor2 - step, -sliderValue);  // Decrease motor 2
+            motor3 = Math.min(motor3 + step, sliderValue);   // Increase motor 3
+            motor4 = Math.min(motor4 + step, sliderValue);   // Increase motor 4
             break;
         case 'left':
-            motor1 = 1;   // Increase motor 1
-            motor2 = 1;   // Increase motor 2
-            motor3 = -1;  // Decrease motor 3
-            motor4 = -1;  // Decrease motor 4
+            motor1 = Math.min(motor1 + step, sliderValue);   // Increase motor 1
+            motor2 = Math.min(motor2 + step, sliderValue);   // Increase motor 2
+            motor3 = Math.max(motor3 - step, -sliderValue);  // Decrease motor 3
+            motor4 = Math.max(motor4 - step, -sliderValue);  // Decrease motor 4
             break;
     }
 
-    // Call the C++ function to set motor values
+    // Send updated motor values to the C++ side
     send(`setMotorValues(${motor1}, ${motor2}, ${motor3}, ${motor4}, ${sliderValue})`);
 }
 
-// Helper function to start motor change on button press
+// Helper function to start motor change when button is pressed
 function startMotorChange(direction) {
     holdInterval = setInterval(() => {
         updateMotorValues(direction);
-    }, 100);  // Adjust interval as needed (in ms)
+    }, 100);  // Adjust interval for smoother control (in ms)
 }
 
-// Helper function to stop motor change on button release
+// Helper function to stop motor change when button is released
 function stopMotorChange() {
-    clearInterval(holdInterval);  // Stop continuous motor update
+    clearInterval(holdInterval);  // Stop motor updates
 }
 
-// Add event listeners to buttons for forward, backward, left, and right
+// Event listeners for forward, backward, left, and right buttons
 document.getElementById('btn-up').addEventListener('mousedown', () => startMotorChange('forward'));
 document.getElementById('btn-up').addEventListener('mouseup', stopMotorChange);
 
