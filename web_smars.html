@@ -544,8 +544,8 @@ document.getElementById("btn-up").addEventListener("mouseup", function() {
 });
 
 document.getElementById("btn-down").addEventListener("mousedown", function() {
-    setMotorValues(+5, -5, -5, +5);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
-    this.holdInterval = setInterval(() => setMotorValues(+5, -5, -5, +5), 100);
+    setMotorValues(0, -5, -5, 0);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+    this.holdInterval = setInterval(() => setMotorValues(0, -5, -5, 0), 100);
 });
 document.getElementById("btn-down").addEventListener("mouseup", function() {
     clearInterval(this.holdInterval);
