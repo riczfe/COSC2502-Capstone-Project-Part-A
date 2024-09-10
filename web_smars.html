@@ -592,71 +592,95 @@ document.getElementById("emergency-button").addEventListener("click", function()
 //##########################YOU APPLY YOUR CHANGES HERE########################################################################################################
 // Define the sendCommand function to send WebSocket commands
 function sendCommand(command) {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(command);
-                console.log(`Command sent: ${command}`);
-            } else {
-                console.error("WebSocket is not open or ready.");
-            }
-        }
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(command);
+        console.log(`Command sent: ${command}`);
+    } else {
+        console.error("WebSocket is not open or ready.");
+    }
+}
 
-        // Update motors function
-        function updateMotors(motor1, motor2, motor3, motor4) {
-            const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
-            sendCommand(motorValues);  // Send motor values via WebSocket
-            console.log(`Motor values sent: ${motorValues}`);
-        }
+// Update motors function to send motor values
+function updateMotors(motor1, motor2, motor3, motor4) {
+    const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+    sendCommand(motorValues);  // Send motor values via WebSocket
+    console.log(`Motor values sent: ${motorValues}`);
+}
 
-        // Event listeners for directional buttons
-        let upInterval, downInterval, leftInterval, rightInterval;
+// Helper function to adjust motor values based on the slider value
+// This scales motor values based on the slider value (no direct ESC changes)
+function adjustMotorValues(sliderValue, increaseFactor, decreaseFactor) {
+    let increaseAmount = sliderValue * (increaseFactor / 100); // Percentage of slider value to increase
+    let decreaseAmount = sliderValue * (decreaseFactor / 100); // Percentage of slider value to decrease
 
-        document.getElementById("btn-up").addEventListener("mousedown", () => {
-            sendCommand("MOVE_UP");
-            updateMotors(1000, 1000, 1200, 1200);  // Adjust motor values
-            upInterval = setInterval(() => updateMotors(1000, 1000, 1200, 1200), 100);
-        });
-        document.getElementById("btn-up").addEventListener("mouseup", () => clearInterval(upInterval));
+    // Return adjusted motor values
+    return { increaseAmount, decreaseAmount };
+}
 
-        document.getElementById("btn-down").addEventListener("mousedown", () => {
-            sendCommand("MOVE_DOWN");
-            updateMotors(1200, 1200, 1000, 1000);
-            downInterval = setInterval(() => updateMotors(1200, 1200, 1000, 1000), 100);
-        });
-        document.getElementById("btn-down").addEventListener("mouseup", () => clearInterval(downInterval));
+// Set intervals for holding buttons
+let upInterval, downInterval, leftInterval, rightInterval;
 
-        document.getElementById("btn-left").addEventListener("mousedown", () => {
-            sendCommand("MOVE_LEFT");
-            updateMotors(1000, 1200, 1000, 1200);
-            leftInterval = setInterval(() => updateMotors(1000, 1200, 1000, 1200), 100);
-        });
-        document.getElementById("btn-left").addEventListener("mouseup", () => clearInterval(leftInterval));
+// Event listener for "Move Up" (forward)
+document.getElementById("btn-up").addEventListener("mousedown", () => {
+    const sliderValue = parseInt(potSlider.value);  // Get current slider value
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
 
-        document.getElementById("btn-right").addEventListener("mousedown", () => {
-            sendCommand("MOVE_RIGHT");
-            updateMotors(1200, 1000, 1200, 1000);
-            rightInterval = setInterval(() => updateMotors(1200, 1000, 1200, 1000), 100);
-        });
-        document.getElementById("btn-right").addEventListener("mouseup", () => clearInterval(rightInterval));
+    // Increase motors 1 and 4, decrease motors 2 and 3
+    sendCommand("MOVE_UP");
+    updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount);  // Motor 1 and 4 increase, Motor 2 and 3 decrease
+    upInterval = setInterval(() => updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount), 100);
+});
+document.getElementById("btn-up").addEventListener("mouseup", () => clearInterval(upInterval));
 
-        // Emergency stop button
-        document.getElementById("emergency-button").addEventListener("click", function() {
-            const motor1 = 0, motor2 = 0, motor3 = 0, motor4 = 0;
-            potSlider.value = 0;  // Reset the slider to 0
-            updateMotors(motor1, motor2, motor3, motor4);
-            console.log("Emergency Stop Activated, all motors turned off");
-        });
+// Event listener for "Move Down" (backward)
+document.getElementById("btn-down").addEventListener("mousedown", () => {
+    const sliderValue = parseInt(potSlider.value);  // Get current slider value
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
 
-        // Reset motors on page load
-        function resetMotors() {
-            const sliderValue = parseInt(potSlider.value);
-            updateMotors(sliderValue, sliderValue, sliderValue, sliderValue);
-        }
-        window.onload = resetMotors;
+    // Increase motors 2 and 3, decrease motors 1 and 4
+    sendCommand("MOVE_DOWN");
+    updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount);  // Motor 2 and 3 increase, Motor 1 and 4 decrease
+    downInterval = setInterval(() => updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount), 100);
+});
+document.getElementById("btn-down").addEventListener("mouseup", () => clearInterval(downInterval));
 
-        // Send motor values periodically
-        setInterval(function () {
-            sendCommand(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
-        }, 300);
+// Event listener for "Move Left"
+document.getElementById("btn-left").addEventListener("mousedown", () => {
+    const sliderValue = parseInt(potSlider.value);  // Get current slider value
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+
+    // Increase motors 1 and 2, decrease motors 3 and 4
+    sendCommand("MOVE_LEFT");
+    updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount);  // Motor 1 and 2 increase, Motor 3 and 4 decrease
+    leftInterval = setInterval(() => updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount), 100);
+});
+document.getElementById("btn-left").addEventListener("mouseup", () => clearInterval(leftInterval));
+
+// Event listener for "Move Right"
+document.getElementById("btn-right").addEventListener("mousedown", () => {
+    const sliderValue = parseInt(potSlider.value);  // Get current slider value
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+
+    // Increase motors 3 and 4, decrease motors 1 and 2
+    sendCommand("MOVE_RIGHT");
+    updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount);  // Motor 3 and 4 increase, Motor 1 and 2 decrease
+    rightInterval = setInterval(() => updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount), 100);
+});
+document.getElementById("btn-right").addEventListener("mouseup", () => clearInterval(rightInterval));
+
+// Reset motor values on page load or after pressing the emergency button
+function resetMotors() {
+    const sliderValue = parseInt(potSlider.value);  // Get slider value as base
+    updateMotors(sliderValue, sliderValue, sliderValue, sliderValue);  // Set all motors to the slider value
+}
+window.onload = resetMotors;
+
+// Emergency stop button to turn off all motors
+document.getElementById("emergency-button").addEventListener("click", function() {
+    updateMotors(0, 0, 0, 0);  // Turn off all motors
+    console.log("Emergency Stop Activated, all motors turned off");
+});
+
 </script>
 </body>
 </html>
