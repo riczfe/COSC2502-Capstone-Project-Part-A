@@ -14,6 +14,7 @@
 #define MIN_SIGNAL 1000  // Minimum PWM signal for ESC
 #define POT_PIN 36       // Pin attached to the potentiometer
 
+
 Servo ESC1;
 Servo ESC2;
 Servo ESC3;
@@ -50,6 +51,7 @@ void setup()
     Init_PID();      // Initialize the PID
     SerialDataPrint();
 
+
     WiFi.softAP(ssid, password);
     IPAddress IP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
@@ -68,70 +70,139 @@ void setup()
 }
 
 //HERE's WHEN IT CONNECTS USING SLIDER TO CONTROL
+// void handle_message(WebsocketsMessage msg)
+// {
+//     String data = msg.data();
+//     if (data == "EMERGENCY_STOP")
+//     {
+//         sendEmergencyStop();
+//         return;
+//     }
+
+//     // Split the incoming data by commas
+//     commaIndex = data.indexOf(',');
+//     LValue = data.substring(0, commaIndex).toInt();
+//     int secondCommaIndex = data.indexOf(',', commaIndex + 1);
+//     RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
+//     int sliderValue = data.substring(secondCommaIndex + 1).toInt();
+
+//     // motor1.drive(LValue);
+//     // motor2.drive(RValue);
+
+//     // Ensure CtrlPWM is correctly mapped from sliderValue (0-100) to ESC range (1000-2000)
+//     CtrlPWM = map(sliderValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL);
+
+//     ESC1.writeMicroseconds(CtrlPWM);
+//     ESC2.writeMicroseconds(CtrlPWM);
+//     ESC3.writeMicroseconds(CtrlPWM);
+//     ESC4.writeMicroseconds(CtrlPWM);
+
+//     ESC1_value = CtrlPWM;
+//     ESC2_value = CtrlPWM;
+//     ESC3_value = CtrlPWM;
+//     ESC4_value = CtrlPWM;
+
+//     //this part motor button
+//      if (data == "MOVE_UP") {
+//         // Moving forward: Motors 1 and 4 move forward, 2 and 3 decrease to move backward
+//         ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+//         ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
+//         ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+//         ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
+//     }
+//     else if (data == "MOVE_DOWN") {
+//         // Moving backward: Motors 2 and 3 move forward, 1 and 4 decrease to move backward
+//         ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+//         ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
+//         ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+//         ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
+//     }
+//     else if (data == "MOVE_LEFT") {
+//         // Moving left: Motors 1 and 2 move forward, 3 and 4 decrease to move backward
+//         ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
+//         ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
+//         ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
+//         ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
+//     }
+//     else if (data == "MOVE_RIGHT") {
+//         // Moving right: Motors 3 and 4 move forward, 1 and 2 decrease to move backward
+//         ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
+//         ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
+//         ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
+//         ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
+//     }
+
+//     //button
+// }
+
+//#################################################################NEW VOID HANDLE_MESSAGE#######################################################################
 void handle_message(WebsocketsMessage msg)
 {
     String data = msg.data();
+
+    // Handle emergency stop command
     if (data == "EMERGENCY_STOP")
     {
         sendEmergencyStop();
         return;
     }
 
-    commaIndex = data.indexOf(',');
-    LValue = data.substring(0, commaIndex).toInt();
-    int secondCommaIndex = data.indexOf(',', commaIndex + 1);
-    RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
-    int sliderValue = data.substring(secondCommaIndex + 1).toInt();
+    // Split the incoming data by commas for manual control
+    int commaIndex = data.indexOf(',');
+    if (commaIndex != -1) {
+        LValue = data.substring(0, commaIndex).toInt();
+        int secondCommaIndex = data.indexOf(',', commaIndex + 1);
+        RValue = data.substring(commaIndex + 1, secondCommaIndex).toInt();
+        int sliderValue = data.substring(secondCommaIndex + 1).toInt();
 
-    // motor1.drive(LValue);
-    // motor2.drive(RValue);
+        CtrlPWM = map(sliderValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL);
+        ESC1.writeMicroseconds(CtrlPWM);
+        ESC2.writeMicroseconds(CtrlPWM);
+        ESC3.writeMicroseconds(CtrlPWM);
+        ESC4.writeMicroseconds(CtrlPWM);
+    } 
 
-    // Ensure CtrlPWM is correctly mapped from sliderValue (0-100) to ESC range (1000-2000)
-    CtrlPWM = map(sliderValue, 0, 100, MIN_SIGNAL, MAX_SIGNAL);
+    // Handling directional movement commands
+    else if (data == "MOVE_UP") {
+        Serial.println("MOVE_UP received");
+        ESC1.writeMicroseconds(CtrlPWM + 100); // Motor 1 forward
+        ESC4.writeMicroseconds(CtrlPWM + 100); // Motor 4 forward
+        ESC2.writeMicroseconds(CtrlPWM - 50);  // Motor 2 backward
+        ESC3.writeMicroseconds(CtrlPWM - 50);  // Motor 3 backward
+    }
+    else if (data == "MOVE_DOWN") {
+        Serial.println("MOVE_DOWN received");
+        ESC1.writeMicroseconds(CtrlPWM - 50);  // Motor 1 backward
+        ESC4.writeMicroseconds(CtrlPWM - 50);  // Motor 4 backward
+        ESC2.writeMicroseconds(CtrlPWM + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(CtrlPWM + 100); // Motor 3 forward
+    }
+    else if (data == "MOVE_LEFT") {
+        Serial.println("MOVE_LEFT received");
+        ESC1.writeMicroseconds(CtrlPWM + 100); // Motor 1 forward
+        ESC2.writeMicroseconds(CtrlPWM + 100); // Motor 2 forward
+        ESC3.writeMicroseconds(CtrlPWM - 50);  // Motor 3 backward
+        ESC4.writeMicroseconds(CtrlPWM - 50);  // Motor 4 backward
+    }
+    else if (data == "MOVE_RIGHT") {
+        Serial.println("MOVE_RIGHT received");
+        ESC1.writeMicroseconds(CtrlPWM - 50);  // Motor 1 backward
+        ESC2.writeMicroseconds(CtrlPWM - 50);  // Motor 2 backward
+        ESC3.writeMicroseconds(CtrlPWM + 100); // Motor 3 forward
+        ESC4.writeMicroseconds(CtrlPWM + 100); // Motor 4 forward
+    }
 
-    ESC1.writeMicroseconds(CtrlPWM);
-    ESC2.writeMicroseconds(CtrlPWM);
-    ESC3.writeMicroseconds(CtrlPWM);
-    ESC4.writeMicroseconds(CtrlPWM);
-
+    // Log motor values for debugging
     ESC1_value = CtrlPWM;
     ESC2_value = CtrlPWM;
     ESC3_value = CtrlPWM;
     ESC4_value = CtrlPWM;
 
-    //this part motor button
-     if (data == "MOVE_UP") {
-        // Moving forward: Motors 1 and 4 move forward, 2 and 3 decrease to move backward
-        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
-        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
-        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
-        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
-    }
-    else if (data == "MOVE_DOWN") {
-        // Moving backward: Motors 2 and 3 move forward, 1 and 4 decrease to move backward
-        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
-        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
-        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
-        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
-    }
-    else if (data == "MOVE_LEFT") {
-        // Moving left: Motors 1 and 2 move forward, 3 and 4 decrease to move backward
-        ESC1.writeMicroseconds(ESC1_value + 100); // Motor 1 forward
-        ESC2.writeMicroseconds(ESC2_value + 100); // Motor 2 forward
-        ESC3.writeMicroseconds(ESC3_value - 50);  // Motor 3 backward with a smoother decrease
-        ESC4.writeMicroseconds(ESC4_value - 50);  // Motor 4 backward with a smoother decrease
-    }
-    else if (data == "MOVE_RIGHT") {
-        // Moving right: Motors 3 and 4 move forward, 1 and 2 decrease to move backward
-        ESC1.writeMicroseconds(ESC1_value - 50);  // Motor 1 backward with a smoother decrease
-        ESC2.writeMicroseconds(ESC2_value - 50);  // Motor 2 backward with a smoother decrease
-        ESC3.writeMicroseconds(ESC3_value + 100); // Motor 3 forward
-        ESC4.writeMicroseconds(ESC4_value + 100); // Motor 4 forward
-    }
-
-    //button
+    Serial.print("ESC1: "); Serial.println(ESC1_value);
+    Serial.print("ESC2: "); Serial.println(ESC2_value);
+    Serial.print("ESC3: "); Serial.println(ESC3_value);
+    Serial.print("ESC4: "); Serial.println(ESC4_value);
 }
-
 // ================================================================
 // Loop function
 // ================================================================
