@@ -507,88 +507,156 @@ document.getElementById("emergency-button").addEventListener("click", function()
         // });
         
 
-//change 2
-    // Motor values for all four motors
-    let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
-  // Ensure motors are reset and not continuously updating if no input is detected
-let isMoving = false;
+// //change 2
+//     // Motor values for all four motors
+//     let motor1 = 50, motor2 = 50, motor3 = 50, motor4 = 50;
+//   // Ensure motors are reset and not continuously updating if no input is detected
+// let isMoving = false;
    
-    // Update motors only when a change is detected
-function updateMotors() {
-    if (isMoving) {
-        const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
-        send(motorValues);  // Sending motor values to the WebSocket server
-        console.log(`Motor values: ${motorValues}`);
-    }
-}
+//     // Update motors only when a change is detected
+// function updateMotors() {
+//     if (isMoving) {
+//         const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+//         send(motorValues);  // Sending motor values to the WebSocket server
+//         console.log(`Motor values: ${motorValues}`);
+//     }
+// }
 
 
-function setMotorValues(forward1, forward2, back1, back2) {
-    // Apply motor changes considering the clockwise and counterclockwise motor setup
-    motor1 += forward1;
-    motor2 += forward2;
-    motor3 += back1;
-    motor4 += back2;
-    isMoving = true;
-    updateMotors();  // Send updated motor values
-}
+// function setMotorValues(forward1, forward2, back1, back2) {
+//     // Apply motor changes considering the clockwise and counterclockwise motor setup
+//     motor1 += forward1;
+//     motor2 += forward2;
+//     motor3 += back1;
+//     motor4 += back2;
+//     isMoving = true;
+//     updateMotors();  // Send updated motor values
+// }
 
-// Event listeners for the directional buttons
-document.getElementById("btn-up").addEventListener("mousedown", function() {
-    setMotorValues(-5, +5, +5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
-    this.holdInterval = setInterval(() => setMotorValues(-5, +5, +5, -5), 100);
-});
-document.getElementById("btn-up").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
+// // Event listeners for the directional buttons
+// document.getElementById("btn-up").addEventListener("mousedown", function() {
+//     setMotorValues(-5, +5, +5, -5);  // Forward: Motor 1 and 4 decrease, 2 and 3 increase
+//     this.holdInterval = setInterval(() => setMotorValues(-5, +5, +5, -5), 100);
+// });
+// document.getElementById("btn-up").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
 
-document.getElementById("btn-down").addEventListener("mousedown", function() {
-    setMotorValues(+5, -5, -5, +10);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
-    this.holdInterval = setInterval(() => setMotorValues(+10, -5, -5, +10), 100);
-});
-document.getElementById("btn-down").addEventListener("mouseup", function() {
-    clearInterval(this.holdInterval);
-    resetMotors();
-});
-document.getElementById("btn-left").addEventListener("mousedown", function() {
-    setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
-        this.holdInterval = setInterval(() => setMotorValues(+5, -5, +5, -5), 100);
-    });
-    document.getElementById("btn-left").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+// document.getElementById("btn-down").addEventListener("mousedown", function() {
+//     setMotorValues(+5, -5, -5, +10);  // Backward: Motor 1 and 4 increase, 2 and 3 decrease
+//     this.holdInterval = setInterval(() => setMotorValues(+10, -5, -5, +10), 100);
+// });
+// document.getElementById("btn-down").addEventListener("mouseup", function() {
+//     clearInterval(this.holdInterval);
+//     resetMotors();
+// });
+// document.getElementById("btn-left").addEventListener("mousedown", function() {
+//     setMotorValues(+5, +5, -5, -5);  // Left: esc3 and esc4 decrease, esc1 and esc2 increase
+//         this.holdInterval = setInterval(() => setMotorValues(+5, -5, +5, -5), 100);
+//     });
+//     document.getElementById("btn-left").addEventListener("mouseup", function() {
+//         clearInterval(this.holdInterval);
+//         resetMotors();
+//     });
 
-    document.getElementById("btn-right").addEventListener("mousedown", function() {
-        setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
-        this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
-    });
-    document.getElementById("btn-right").addEventListener("mouseup", function() {
-        clearInterval(this.holdInterval);
-        resetMotors();
-    });
+//     document.getElementById("btn-right").addEventListener("mousedown", function() {
+//         setMotorValues(-5, -5, +5, +5);  // Right: esc3 and esc4 increase, esc1 and esc2 decrease
+//         this.holdInterval = setInterval(() => setMotorValues(-5, -5, +5, +5), 100);
+//     });
+//     document.getElementById("btn-right").addEventListener("mouseup", function() {
+//         clearInterval(this.holdInterval);
+//         resetMotors();
+//     });
 
-// Ensure that motor values reset to the slider value when no buttons are pressed
-function resetMotors() {
-    const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
-    motor1 = motor2 = motor3 = motor4 = sliderValue; // Set all motors to the slider value
-    isMoving = false;
-    updateMotors();
-}
-
-
-// Ensure motors are reset when the page loads
-window.onload = resetMotors;
-
-//change 2
+// // Ensure that motor values reset to the slider value when no buttons are pressed
+// function resetMotors() {
+//     const sliderValue = parseInt(potSlider.value);  // Use the slider value as the base
+//     motor1 = motor2 = motor3 = motor4 = sliderValue; // Set all motors to the slider value
+//     isMoving = false;
+//     updateMotors();
+// }
 
 
-        // Periodically send motor values
+// // Ensure motors are reset when the page loads
+// window.onload = resetMotors;
+
+// //change 2
+
+
+//         // Periodically send motor values
+//         setInterval(function () {
+//             send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
+//         }, 300);
+
+//##########################YOU APPLY YOUR CHANGES HERE########################################################################################################
+// Define the sendCommand function to send WebSocket commands
+function sendCommand(command) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(command);
+                console.log(`Command sent: ${command}`);
+            } else {
+                console.error("WebSocket is not open or ready.");
+            }
+        }
+
+        // Update motors function
+        function updateMotors(motor1, motor2, motor3, motor4) {
+            const motorValues = `${motor1},${motor2},${motor3},${motor4}`;
+            sendCommand(motorValues);  // Send motor values via WebSocket
+            console.log(`Motor values sent: ${motorValues}`);
+        }
+
+        // Event listeners for directional buttons
+        let upInterval, downInterval, leftInterval, rightInterval;
+
+        document.getElementById("btn-up").addEventListener("mousedown", () => {
+            sendCommand("MOVE_UP");
+            updateMotors(1000, 1000, 1200, 1200);  // Adjust motor values
+            upInterval = setInterval(() => updateMotors(1000, 1000, 1200, 1200), 100);
+        });
+        document.getElementById("btn-up").addEventListener("mouseup", () => clearInterval(upInterval));
+
+        document.getElementById("btn-down").addEventListener("mousedown", () => {
+            sendCommand("MOVE_DOWN");
+            updateMotors(1200, 1200, 1000, 1000);
+            downInterval = setInterval(() => updateMotors(1200, 1200, 1000, 1000), 100);
+        });
+        document.getElementById("btn-down").addEventListener("mouseup", () => clearInterval(downInterval));
+
+        document.getElementById("btn-left").addEventListener("mousedown", () => {
+            sendCommand("MOVE_LEFT");
+            updateMotors(1000, 1200, 1000, 1200);
+            leftInterval = setInterval(() => updateMotors(1000, 1200, 1000, 1200), 100);
+        });
+        document.getElementById("btn-left").addEventListener("mouseup", () => clearInterval(leftInterval));
+
+        document.getElementById("btn-right").addEventListener("mousedown", () => {
+            sendCommand("MOVE_RIGHT");
+            updateMotors(1200, 1000, 1200, 1000);
+            rightInterval = setInterval(() => updateMotors(1200, 1000, 1200, 1000), 100);
+        });
+        document.getElementById("btn-right").addEventListener("mouseup", () => clearInterval(rightInterval));
+
+        // Emergency stop button
+        document.getElementById("emergency-button").addEventListener("click", function() {
+            const motor1 = 0, motor2 = 0, motor3 = 0, motor4 = 0;
+            potSlider.value = 0;  // Reset the slider to 0
+            updateMotors(motor1, motor2, motor3, motor4);
+            console.log("Emergency Stop Activated, all motors turned off");
+        });
+
+        // Reset motors on page load
+        function resetMotors() {
+            const sliderValue = parseInt(potSlider.value);
+            updateMotors(sliderValue, sliderValue, sliderValue, sliderValue);
+        }
+        window.onload = resetMotors;
+
+        // Send motor values periodically
         setInterval(function () {
-            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
+            sendCommand(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
         }, 300);
-
 </script>
 </body>
 </html>
