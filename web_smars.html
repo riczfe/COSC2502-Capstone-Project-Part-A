@@ -608,10 +608,10 @@ function updateMotors(motor1, motor2, motor3, motor4) {
 }
 
 // Helper function to adjust motor values based on the slider value
-// This scales motor values based on the slider value (no direct ESC changes)
+// Adjusting the factors to make the changes more significant
 function adjustMotorValues(sliderValue, increaseFactor, decreaseFactor) {
-    let increaseAmount = sliderValue * (increaseFactor / 100); // Percentage of slider value to increase
-    let decreaseAmount = sliderValue * (decreaseFactor / 100); // Percentage of slider value to decrease
+    let increaseAmount = sliderValue * (increaseFactor / 100); // Larger change
+    let decreaseAmount = sliderValue * (decreaseFactor / 100); // Larger change
 
     // Return adjusted motor values
     return { increaseAmount, decreaseAmount };
@@ -620,53 +620,80 @@ function adjustMotorValues(sliderValue, increaseFactor, decreaseFactor) {
 // Set intervals for holding buttons
 let upInterval, downInterval, leftInterval, rightInterval;
 
+// Adjust the interval duration for smoother control
+const controlInterval = 300; // Adjust the rate of commands being sent
+
 // Event listener for "Move Up" (forward)
 document.getElementById("btn-up").addEventListener("mousedown", () => {
     const sliderValue = parseInt(potSlider.value);  // Get current slider value
-    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 30, 15);  // Increase by 30%, decrease by 15%
 
     // Increase motors 1 and 4, decrease motors 2 and 3
     sendCommand("MOVE_UP");
-    updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount);  // Motor 1 and 4 increase, Motor 2 and 3 decrease
-    upInterval = setInterval(() => updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount), 100);
+    updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount);  
+    upInterval = setInterval(() => {
+        updateMotors(sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount);
+    }, controlInterval);
 });
-document.getElementById("btn-up").addEventListener("mouseup", () => clearInterval(upInterval));
+
+document.getElementById("btn-up").addEventListener("mouseup", () => {
+    clearInterval(upInterval);
+    resetMotors();  // Reset motors after release
+});
 
 // Event listener for "Move Down" (backward)
 document.getElementById("btn-down").addEventListener("mousedown", () => {
-    const sliderValue = parseInt(potSlider.value);  // Get current slider value
-    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+    const sliderValue = parseInt(potSlider.value);  
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 30, 15);  
 
     // Increase motors 2 and 3, decrease motors 1 and 4
     sendCommand("MOVE_DOWN");
-    updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount);  // Motor 2 and 3 increase, Motor 1 and 4 decrease
-    downInterval = setInterval(() => updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount), 100);
+    updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount);
+    downInterval = setInterval(() => {
+        updateMotors(sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount);
+    }, controlInterval);
 });
-document.getElementById("btn-down").addEventListener("mouseup", () => clearInterval(downInterval));
+
+document.getElementById("btn-down").addEventListener("mouseup", () => {
+    clearInterval(downInterval);
+    resetMotors();
+});
 
 // Event listener for "Move Left"
 document.getElementById("btn-left").addEventListener("mousedown", () => {
-    const sliderValue = parseInt(potSlider.value);  // Get current slider value
-    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+    const sliderValue = parseInt(potSlider.value);  
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 30, 15);  
 
     // Increase motors 1 and 2, decrease motors 3 and 4
     sendCommand("MOVE_LEFT");
-    updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount);  // Motor 1 and 2 increase, Motor 3 and 4 decrease
-    leftInterval = setInterval(() => updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount), 100);
+    updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount);
+    leftInterval = setInterval(() => {
+        updateMotors(sliderValue + increaseAmount, sliderValue + increaseAmount, sliderValue - decreaseAmount, sliderValue - decreaseAmount);
+    }, controlInterval);
 });
-document.getElementById("btn-left").addEventListener("mouseup", () => clearInterval(leftInterval));
+
+document.getElementById("btn-left").addEventListener("mouseup", () => {
+    clearInterval(leftInterval);
+    resetMotors();
+});
 
 // Event listener for "Move Right"
 document.getElementById("btn-right").addEventListener("mousedown", () => {
-    const sliderValue = parseInt(potSlider.value);  // Get current slider value
-    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 10, 5);  // Adjust by 10% increase, 5% decrease
+    const sliderValue = parseInt(potSlider.value);  
+    const { increaseAmount, decreaseAmount } = adjustMotorValues(sliderValue, 30, 15);  
 
     // Increase motors 3 and 4, decrease motors 1 and 2
     sendCommand("MOVE_RIGHT");
-    updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount);  // Motor 3 and 4 increase, Motor 1 and 2 decrease
-    rightInterval = setInterval(() => updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount), 100);
+    updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount);
+    rightInterval = setInterval(() => {
+        updateMotors(sliderValue - decreaseAmount, sliderValue - decreaseAmount, sliderValue + increaseAmount, sliderValue + increaseAmount);
+    }, controlInterval);
 });
-document.getElementById("btn-right").addEventListener("mouseup", () => clearInterval(rightInterval));
+
+document.getElementById("btn-right").addEventListener("mouseup", () => {
+    clearInterval(rightInterval);
+    resetMotors();
+});
 
 // Reset motor values on page load or after pressing the emergency button
 function resetMotors() {
