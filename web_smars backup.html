@@ -22,6 +22,7 @@
             align-items: center;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
             transition: background-color 0.3s ease, color 0.3s ease;
+            overflow: hidden; /* Fix elements moving on zoom */
         }
 
         /* Light Mode */
@@ -34,6 +35,8 @@
         h1 {
             color: white;
             margin-bottom: 4vh;
+            position: fixed; /* Fix the position */
+            top: 20px; /* Move it to the top */
         }
 
         body.light-mode h1 {
@@ -42,9 +45,9 @@
 
         /* Light/Dark Mode Toggle Button */
         #mode-toggle {
-            position: absolute;
-            top: 2vh;
-            right: 2vw;
+            position: fixed;
+            top: 20px;
+            right: 20px;
             background-color: #333;
             color: white;
             border: none;
@@ -60,12 +63,13 @@
             background-color: #555;
         }
 
-        /* Container to hold slider and joystick */
+        /* Container to hold slider, buttons and joystick */
         .control-container {
             display: flex;
             justify-content: space-around;
             align-items: center;
             width: 80vw;
+            height: 60vh;
         }
 
         /* Slider Section */
@@ -136,6 +140,36 @@
             background-color: rgb(24 41 41);
         }
 
+        /* Number Buttons Section */
+        .number-buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            width: 200px;
+            margin: 0 40px;
+        }
+
+        .number-buttons button {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            border: none;
+            background-color: #333;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .number-buttons button:hover {
+            background-color: #555;
+        }
+
+        body.light-mode .number-buttons button {
+            background-color: #888;
+        }
+
         /* Joystick Section */
         #joystick-container {
             width: 200px;
@@ -166,8 +200,8 @@
 
         /* Emergency Stop Button */
         #emergency-button {
-            position: absolute;
-            bottom: 4vh;
+            position: fixed;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background-color: red;
@@ -186,8 +220,8 @@
 
         /* Status Box */
         #status-box {
-            position: absolute;
-            bottom: 12vh;
+            position: fixed;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             background-color: green;
@@ -197,7 +231,6 @@
             border-radius: 10px;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
-
     </style>
 </head>
 <body class="light-mode">
@@ -213,6 +246,14 @@
         <!-- Slider Section -->
         <div class="slider-wrapper">
             <input type="range" min="0" max="100" value="0" step="12.5">
+        </div>
+
+        <!-- Number Buttons Section -->
+        <div class="number-buttons">
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
         </div>
 
         <!-- Joystick Section -->
@@ -286,11 +327,9 @@
 
         document.addEventListener('touchend', function () {
             document.ontouchmove = null;
-            document.ontouchmove = null;
             joystickHandle.style.left = 'calc(50% - 35px)';
             joystickHandle.style.top = 'calc(50% - 35px)';
         });
-
     </script>
 
 </body>
