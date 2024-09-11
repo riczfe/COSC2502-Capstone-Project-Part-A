@@ -5,99 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drone Controller</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
             margin: 0;
-            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-            background-color: white;
-            background-image: url('droneimage.jpg');
+            padding: 0;
         }
-        #controller {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-        #app-container {
-            width: 750px; 
-            height: 490px; 
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 20px;
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: #05051a;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            padding: 20px;
-            position: fixed;
-        }
-
-        #potSlider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 37%;
-            height: 50px;
-            transform: rotate(-90deg); /* Rotate slider to vertical */
-            border-radius: 50px;
-            background: linear-gradient(to right,green, orange, yellow, red) ;
-            outline: none;
-            cursor: pointer;
-            position: absolute;
-            top: 270px;
-            margin: 0 0 0 -50px;
-        }
-        h1 {
-            margin-top: 0;
-        }
-        /* Custom slider thumb */
-        #potSlider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 80px;
-            border-radius: 50%;
-            background: black;
-            cursor: pointer;
-            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-        }
-
-        #slider-value {
-            margin-bottom:-100px;
-            margin-left: 170px;
-            font-size: 18px;
-            color: #333;
-            position: absolute;
-            font-style: italic;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-            top: 300px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        #status-box {
-            background-color: grey;
+
+        /* Light Mode */
+        body.light-mode {
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        /* Header Section */
+        h1 {
+            color: white;
+            margin-bottom: 4vh;
+        }
+
+        body.light-mode h1 {
+            color: #333;
+        }
+
+        /* Light/Dark Mode Toggle Button */
+        #mode-toggle {
+            position: absolute;
+            top: 2vh;
+            right: 2vw;
+            background-color: #333;
             color: white;
             border: none;
             padding: 10px 20px;
             font-size: 16px;
-            border-radius: 20px;
-            right: 690px;
-            bottom: 350px;
-            position: absolute;
-            margin: 0 -363px -40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            transition: background-color 0.3s ease;
         }
 
+        #mode-toggle:hover {
+            background-color: #555;
+        }
+
+        /* Container to hold slider and joystick */
+        .control-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 80vw;
+        }
+
+        /* Slider Section */
+        .slider-wrapper {
+            position: relative;
+            height: 20rem;
+            width: 3rem;
+        }
+
+        .slider-wrapper::before, 
+        .slider-wrapper::after {
+            display: block;
+            position: absolute;
+            z-index: 99;
+            color: #fff;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+            line-height: 1;
+            padding: 0.75rem 0;
+            pointer-events: none;
+        }
+
+        .slider-wrapper::before {
+            content: "+";
+        }
+
+        .slider-wrapper::after {
+            content: "−";
+            bottom: 0;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin: 0;
+            padding: 0;
+            width: 20rem;
+            height: 3.5rem;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            border-radius: 1rem;
+            overflow: hidden;
+            cursor: row-resize;
+        }
+
+        input[type=range][step] {
+            background-color: transparent;
+            background-image: repeating-linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2) calc(12.5% - 1px), #05051a 12.5%);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 0;
+            box-shadow: -20rem 0 0 20rem rgba(255, 255, 255, 0.2);
+        }
+
+        input[type=range]::-moz-range-thumb {
+            border: none;
+            width: 0;
+            box-shadow: -20rem 0 0 20rem rgba(255, 255, 255, 0.2);
+        }
+
+        /* Light mode slider */
+        body.light-mode input[type=range] {
+            background-color: rgb(24 41 41);
+        }
+
+        /* Joystick Section */
+        #joystick-container {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            overflow: hidden;
+            user-select: none;
+            border-style: double;
+        }
+
+        #joystick-handle {
+            width: 70px;
+            height: 70px;
+            background-color: #333;
+            border-radius: 50%;
+            position: absolute;
+            left: calc(50% - 35px);
+            top: calc(50% - 35px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: none;
+        }
+
+        body.light-mode #joystick-handle {
+            background-color: #888;
+        }
+
+        /* Emergency Stop Button */
         #emergency-button {
+            position: absolute;
+            bottom: 4vh;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: red;
             color: white;
+            padding: 20px 40px;
+            font-size: 18px;
             border: none;
-            padding: 20px 50px;
-            font-size: 16px;
+            border-radius: 10px;
             cursor: pointer;
-            border-radius: 20px;
-            right: 0px;
-            position: relative;
-            top: 300px;
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
 
@@ -105,408 +184,114 @@
             background-color: darkred;
         }
 
-        #text1 {
-            margin-top: 40px;
-            margin-left: 50px;
-            font-size: 20px;
-            text-align: left;
-            justify-content: left;
-            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        /* Status Box */
+        #status-box {
             position: absolute;
-        }
-        #text2 {
-            position: absolute;
-            right: 420px;
-            font-size: 20px;
-            text-align: right;
-            justify-content: right;
-            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-            margin: 0 -335px -35px;
-        }
-
-        /* Disconnected State */
-        #status-box.disconnected {
-            background-color: grey;
-            color: white;
-        }
-
-        /* Connected State */
-        #status-box.connected {
+            bottom: 12vh;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: green;
             color: white;
-        }
-
-        #joyDiv{
-            width:200px;
-            height:200px;
-            margin: 0 -300px -50px;
-            position: absolute;
-            right: 350px;
-            bottom: 200px;
-            position: absolute;
-            left: -99999999px;
-        }
-
-        #drone-controls {
-            position: absolute;
-            right: 60px;
-            top: 170px;
-            width: 200px; /* Increase the container size to fit larger buttons */
-            height: 200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .control-button {
-            width: 60px;  /* Increase button size */
-            height: 60px; /* Increase button size */
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;  /* Increase font size */
-            font-weight: bold;
-            color: white;
-            background-color: #333;
-            position: absolute;
-            cursor: pointer;
-        }
-
-        #btn-up {
-            top: 0;
-        }
-
-        #btn-down {
-            bottom: 0;
-        }
-
-        #btn-left {
-            left: 0;
-        }
-
-        #btn-right {
-            right: 0;
-        }
-
-        .control-button:hover {
-            background-color: #555;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         }
 
     </style>
-    <script type="text/javascript">
-        var JoyStick = function(containerId, options) {
-            options = options || {};
-            var title = options.title || "joystick",
-                width = options.width || 200,
-                height = options.height || 200,
-                internalFillColor = options.internalFillColor || "#000000",  // Change internal fill color here
-                internalLineWidth = options.internalLineWidth || 2,           // Internal line width
-                internalStrokeColor = options.internalStrokeColor || "#C70039", // Change internal stroke color here
-                externalLineWidth = options.externalLineWidth || 2,            // External line width
-                externalStrokeColor = options.externalStrokeColor || "#900C3F", // Change external stroke color here
-                externalFillColor = options.externalFillColor || "#52e36e", // External fill color (added in paragraph 1)
-                container = document.getElementById(containerId),
-                canvas = document.createElement("canvas");
-
-            canvas.id = title;
-            canvas.width = width;
-            canvas.height = height;
-            container.appendChild(canvas);
-
-            var context = canvas.getContext("2d"),
-                pressed = false,
-                radius = canvas.width / 2 - 20,
-                centerX = canvas.width / 2,
-                centerY = canvas.height / 2,
-                knobX = centerX,
-                knobY = centerY;
-
-            function drawJoystick() {
-                context.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Draw external circle
-                context.beginPath();
-                context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                context.lineWidth = externalLineWidth;
-                context.strokeStyle = externalStrokeColor;
-                context.stroke();
-                context.fillStyle = externalFillColor; // Set external fill color
-                context.fill(); // Fill the external circle
-
-                // Draw internal circle
-                context.beginPath();
-                context.arc(knobX, knobY, radius / 2, 0, Math.PI * 2);
-                var gradient = context.createRadialGradient(knobX, knobY, 5, knobX, knobY, 100);
-                gradient.addColorStop(0, internalFillColor);
-                gradient.addColorStop(1, internalStrokeColor);
-                context.fillStyle = gradient;
-                context.fill();
-                context.lineWidth = internalLineWidth;
-                context.strokeStyle = internalStrokeColor;
-                context.stroke();
-            }
-
-            canvas.addEventListener("mousedown", function(event) {
-                pressed = true;
-            });
-
-            canvas.addEventListener("mousemove", function(event) {
-                if (pressed) {
-                    var rect = canvas.getBoundingClientRect();
-                    var dx = event.clientX - rect.left - centerX;
-                    var dy = event.clientY - rect.top - centerY;
-                    var distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance > radius) {
-                        var angle = Math.atan2(dy, dx);
-                        dx = radius * Math.cos(angle);
-                        dy = radius * Math.sin(angle);
-                    }
-
-                    knobX = centerX + dx;
-                    knobY = centerY + dy;
-                    drawJoystick();
-                }
-            });
-
-            canvas.addEventListener("mouseup", function() {
-                pressed = false;
-                knobX = centerX;
-                knobY = centerY;
-                drawJoystick();
-            });
-
-            canvas.addEventListener("mouseleave", function() {
-                pressed = false;
-                knobX = centerX;
-                knobY = centerY;
-                drawJoystick();
-            });
-
-            drawJoystick();
-
-            this.GetWidth = function() {
-                return canvas.width;
-            }
-            this.GetHeight = function() {
-                return canvas.height;
-            }
-            this.GetPosX = function() {
-                return knobX;
-            }
-            this.GetPosY = function() {
-                return knobY;
-            }
-            this.GetX = function() {
-                return ((knobX - centerX) / radius * 100).toFixed();
-            }
-            this.GetY = function() {
-                return ((knobY - centerY) / radius * -100).toFixed();
-            }
-            this.GetDir = function() {
-                var direction = "",
-                    xDiff = knobX - centerX,
-                    yDiff = knobY - centerY;
-
-                if (yDiff >= -radius / 2 && yDiff <= radius / 2) direction = "C";
-                if (yDiff < -radius / 2) direction = "N";
-                if (yDiff > radius / 2) direction = "S";
-                if (xDiff < -radius / 2) direction += "W";
-                if (xDiff > radius / 2) direction += "E";
-                return direction;
-            }
-        };
-
-    </script>
 </head>
-<body>
-    <div id="app-container">
-        <h1>Drone Controller</h1>
-        <div id="joyDiv"></div>
-        <div id="controller">
-            <p id="text1">Slider Control</p>
-            <input placeholder="slider" type="range" id="potSlider" min="0" max="100" value="0">
-            <div id="slider-value">Value: XX</div>
-            <div id="status-box" class="disconnected">Disconnected</div>
-            <p id="text2">Direction Control</p>
+<body class="light-mode">
+
+    <!-- Header Section -->
+    <h1>Drone Controller</h1>
+
+    <!-- Light/Dark Mode Toggle Button -->
+    <button id="mode-toggle">Switch to Dark Mode</button>
+
+    <!-- Controller Section -->
+    <div class="control-container">
+        <!-- Slider Section -->
+        <div class="slider-wrapper">
+            <input type="range" min="0" max="100" value="0" step="12.5">
         </div>
-        <div id="drone-controls">
-            <button class="control-button" id="btn-up">↑</button>
-            <button class="control-button" id="btn-left">←</button>
-            <button class="control-button" id="btn-right">→</button>
-            <button class="control-button" id="btn-down">↓</button>
+
+        <!-- Joystick Section -->
+        <div id="joystick-container">
+            <div id="joystick-handle"></div>
         </div>
-        
-        
-        <button id="emergency-button">Emergency Stop</button>
     </div>
 
+    <!-- Status Box -->
+    <div id="status-box">Connected</div>
+
+    <!-- Emergency Button -->
+    <button id="emergency-button">Emergency Stop</button>
+
     <script>
-        const statusBox = document.getElementById("status-box");
-        const view = document.getElementById('stream');
-        let ws;  // Declare ws outside the try block
+        // Light/Dark Mode Toggle
+        const toggleButton = document.getElementById('mode-toggle');
+        const bodyElement = document.body;
 
-        try {
-            const WS_URL = "ws://" + window.location.host + ":82";
-            ws = new WebSocket(WS_URL);
-
-            ws.onopen = function() {
-                // Connection opened, update status box
-                statusBox.innerText = "Connected";
-                statusBox.classList.remove("disconnected");
-                statusBox.classList.add("connected");
-            };
-
-            ws.onclose = function() {
-                // Connection closed, update status box
-                statusBox.innerText = "Disconnected";
-                statusBox.classList.remove("connected");
-                statusBox.classList.add("disconnected");
-            };
-
-            ws.onerror = function(error) {
-                console.error("WebSocket Error: ", error);
-                // Handle the error as needed
-            };
-            
-            ws.onmessage = function(message) {
-                if (message.data instanceof Blob) {
-                    var urlObject = URL.createObjectURL(message.data);
-                    view.src = urlObject;
-                }
-            };
-
-            var lastText, lastSend, sendTimeout;
-            function send(txt) {
-                var now = new Date().getTime();
-                if (lastSend === undefined || now - lastSend >= 30) {
-                    try {
-                        ws.send(txt);
-                        lastSend = new Date().getTime();
-                        return;
-                    } catch (e) {
-                        console.log(e);
-                    }
-                }
-                lastText = txt;
-                if (!sendTimeout) {
-                    var ms = lastSend !== undefined ? 30 - (now - lastSend) : 30;
-                    if (ms < 0)
-                        ms = 0;
-                    sendTimeout = setTimeout(() => {
-                        sendTimeout = null;
-                        send(lastText);
-                    }, ms);
-                }
-            }
-        }catch(e){
-            console.log(e);
-        }
-
-        var joy = new JoyStick('joyDiv');
-        var potSlider = document.getElementById("potSlider");
-
-        function getMotorValues(nJoyX, nJoyY, sliderValue) {
-            var nMotMixL;
-            var nMotMixR;
-            var fPivYLimit = 32.0;
-
-            var nMotPremixL;
-            var nMotPremixR;
-            var nPivSpeed;
-            var fPivScale;
-
-            if (nJoyY >= 0) {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
-                nMotPremixR = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
+        toggleButton.addEventListener('click', () => {
+            if (bodyElement.classList.contains('light-mode')) {
+                bodyElement.classList.replace('light-mode', 'dark-mode');
+                toggleButton.textContent = 'Switch to Light Mode';
             } else {
-                nMotPremixL = (nJoyX >= 0 ? 100.0 - nJoyX : 100.0);
-                nMotPremixR = (nJoyX >= 0 ? 100.0 : 100.0 + parseFloat(nJoyX));
+                bodyElement.classList.replace('dark-mode', 'light-mode');
+                toggleButton.textContent = 'Switch to Dark Mode';
             }
+        });
 
-            nMotPremixL = nMotPremixL * nJoyY / 100.0;
-            nMotPremixR = nMotPremixR * nJoyY / 100.0;
+        // Joystick movement logic
+        const joystickHandle = document.getElementById('joystick-handle');
+        const joystickContainer = document.getElementById('joystick-container');
+        const maxMoveDistance = joystickContainer.offsetWidth / 2;
 
-            nPivSpeed = nJoyX;
-            fPivScale = (Math.abs(nJoyY) > fPivYLimit) ? 0.0 : (1.0 - Math.abs(nJoyY) / fPivYLimit);
+        let joystickCenterX = joystickContainer.offsetWidth / 2;
+        let joystickCenterY = joystickContainer.offsetHeight / 2;
 
-            nMotMixL = (1.0 - fPivScale) * nMotPremixL + fPivScale * (nPivSpeed);
-            nMotMixR = (1.0 - fPivScale) * nMotPremixR + fPivScale * (-nPivSpeed);
+        function moveJoystick(e) {
+            const rect = joystickContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left - joystickCenterX;
+            const y = e.clientY - rect.top - joystickCenterY;
+            const distance = Math.sqrt(x * x + y * y);
 
-            return Math.round(nMotMixL * 2.55) + "," + Math.round(nMotMixR * 2.55) + "," + sliderValue;
+            if (distance < maxMoveDistance) {
+                joystickHandle.style.left = `${x + joystickCenterX - joystickHandle.offsetWidth / 2}px`;
+                joystickHandle.style.top = `${y + joystickCenterY - joystickHandle.offsetHeight / 2}px`;
+            } else {
+                const angle = Math.atan2(y, x);
+                joystickHandle.style.left = `${Math.cos(angle) * maxMoveDistance + joystickCenterX - joystickHandle.offsetWidth / 2}px`;
+                joystickHandle.style.top = `${Math.sin(angle) * maxMoveDistance + joystickCenterY - joystickHandle.offsetHeight / 2}px`;
+            }
         }
 
-        potSlider.oninput = function() {
-            var sliderValue = potSlider.value;
-            document.getElementById("slider-value").innerText = "Value: " + sliderValue;
-            send(getMotorValues(joy.GetX(), joy.GetY(), sliderValue));
-            console.log("Slider value:", sliderValue);
-        }
-        
-        // Emergency stop button to reset all motors
-        document.getElementById("emergency-button").addEventListener("click", function() {
-            potSlider.value = 0;  // Set potSlider value to 0
-            potSlider.oninput();  // Trigger the slider input event to send the updated value
-            motor1 = motor2 = motor3 = motor4 = 0;  // Turn off all motors
-            updateMotors();
-            console.log("Emergency Stop Activated, all motors turned off");
+        joystickContainer.addEventListener('mousedown', function () {
+            document.onmousemove = function (e) {
+                moveJoystick(e);
+            };
         });
 
-        // Send motor values based on button presses
-        function sendCommandAndLog(command) {
-            send(command);
-            console.log(`Command sent: ${command}`);
-        }
-
-        // Hold to move up
-        document.getElementById("btn-up").addEventListener("mousedown", function() {
-            sendCommandAndLog("MOVE_UP");
-            this.holdInterval = setInterval(() => sendCommandAndLog("MOVE_UP"), 100); // Continue sending command while holding
+        document.addEventListener('mouseup', function () {
+            document.onmousemove = null;
+            joystickHandle.style.left = 'calc(50% - 35px)';
+            joystickHandle.style.top = 'calc(50% - 35px)';
         });
 
-        document.getElementById("btn-up").addEventListener("mouseup", function() {
-            clearInterval(this.holdInterval); // Stop sending command on release
+        joystickContainer.addEventListener('touchstart', function (e) {
+            document.ontouchmove = function (e) {
+                moveJoystick(e.touches[0]);
+            };
         });
 
-        // Hold to move down
-        document.getElementById("btn-down").addEventListener("mousedown", function() {
-            sendCommandAndLog("MOVE_DOWN");
-            this.holdInterval = setInterval(() => sendCommandAndLog("MOVE_DOWN"), 100);
+        document.addEventListener('touchend', function () {
+            document.ontouchmove = null;
+            document.ontouchmove = null;
+            joystickHandle.style.left = 'calc(50% - 35px)';
+            joystickHandle.style.top = 'calc(50% - 35px)';
         });
-
-        document.getElementById("btn-down").addEventListener("mouseup", function() {
-            clearInterval(this.holdInterval);
-        });
-
-        // Hold to move left
-        document.getElementById("btn-left").addEventListener("mousedown", function() {
-            sendCommandAndLog("MOVE_LEFT");
-            this.holdInterval = setInterval(() => sendCommandAndLog("MOVE_LEFT"), 100);
-        });
-
-        document.getElementById("btn-left").addEventListener("mouseup", function() {
-            clearInterval(this.holdInterval);
-        });
-
-        // Hold to move right
-        document.getElementById("btn-right").addEventListener("mousedown", function() {
-            sendCommandAndLog("MOVE_RIGHT");
-            this.holdInterval = setInterval(() => sendCommandAndLog("MOVE_RIGHT"), 100);
-        });
-
-        document.getElementById("btn-right").addEventListener("mouseup", function() {
-            clearInterval(this.holdInterval);
-        });
-
-        // Ensure motors are reset when the page loads
-        window.onload = function() {
-            updateMotors();  // Set motors to slider value
-        };
-
-        // Periodically send motor values
-        setInterval(function () {
-            send(getMotorValues(joy.GetX(), joy.GetY(), potSlider.value));
-        }, 300);
 
     </script>
+
 </body>
 </html>
