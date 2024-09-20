@@ -1,123 +1,93 @@
 #include <WiFi.h>
 #include <Arduino.h>
-#include "MPU6050_6Axis_MotionApps20.h"
-#include "Wire.h"
-#include <ESP32Servo.h>
-#include <Wire.h>
-#include <WiFiServer.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoWebsockets.h>
+#include <Wire.h>
+#include <ESP32Servo.h>
 #include "web.h"
 #include "MyPID.h"
+#include "MyMotorConfig.h"
+#include "MyMPU.h"
 
+#define CURRENT_LED 32      // LED for indicating current status
+#define BUTTON_RED 4        // Button for selecting virtual control
+#define BUTTON_YELLOW 2     // Button for selecting physical control
+#define VIRTUAL_LED 16      // LED to indicate virtual control
+#define PHYSICAL_LED 17     // LED to indicate physical control
+#define MAX_CLIENTS 4       // Allow maximum 4 drones connected to controller
 
-#define CURRENT_LED 32    // Potentiometer
-#define BUTTON_RED 4       //34
-#define BUTTON_YELLOW 2        //35
-#define VIRTUAL_LED 16
-#define PHYSICAL_LED 17
-#define MAX_CLIENTS 4  // Allow maximum 4 drones connected to controller 
+// Wi-Fi credentials
+const char* ssid = "RB_MiniDrone";
+const char* password = "123456789";
 
-#define MOT_1 26
-#define MOT_2 33
-#define MOT_3 27
-#define MOT_4 25
-
-
-const char* ssid = "RB_MiniDrone";    // SSID of master ESP32's Wi-Fi network
-const char* password = "123456789";     // Password for master ESP32's Wi-Fi network
-const int serverPort = 80;             // Port 80 is default for HTTP
-
-
-MPU6050 mpu;       // Prepare the mpu object to obtain the angles from the DMP
-MPU6050 accelgyro; // Prepare the accelgyro object to obtain the gyroscope and the acceleration data
-
-// MPU variable
-uint16_t packetSize;    // DMP packet size. Default is 42 bytes.
-uint16_t fifoCount;     // count of all bytes currently in FIFO
-uint8_t fifoBuffer[64]; // FIFO storage buffer
-Quaternion q;           // [w, x, y, z]         quaternion container
-VectorFloat gravity;    // [x, y, z]            gravity vector
-float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll
-int16_t ax, ay, az;     // Raw acceleration data from the MPU
-int16_t gx, gy, gz;     // Raw gyroscope data from the MPU
-
-double anglex, angley, anglez; // angle in the x, y, z direction
-float gyrox, gyroy, gyroz;    // angle rate in the x, y, z direction
-float accx, accy, accz;       // acceleration in the x, y, z direction
-
-unsigned long time_prev = 0; // data for the serial communication
-
-int control_method = 0;
-int buttonState_Left = 0, buttonState_Right = 0;
-int CtrlPWM = 0;                      
-int Left = 0, Right = 0;
-int dataArray[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};     
-int dataread[10];
-int number_of_clients = 0;
-int total_drone_being_controlled = 2;   // Start at 2 because 1 is for Master drone already
-bool clientConnected[MAX_CLIENTS + 1] = {false};  // Array to track connected clients
-unsigned long previousMillis = 0;   // Variable to store the previous time
-const long interval = 500;      // Time delay (0.5 sec)
-int receivedarray[10];  // Array to store received values from master
-int connection_check_array[10];
-int drone_1_speed = 0;
-
-//------------------------------------------
-// Define server
-WiFiServer server(serverPort);
-
+// WebSocket server
 using namespace websockets;
-WebsocketsServer server2;
+WebsocketsServer server;
 AsyncWebServer webserver(80);
 
-//-------------------------------------------
+// Control method variables
+int control_method = 0;
+int buttonState_Left = 0, buttonState_Right = 0;
 
-WiFiClient clients[MAX_CLIENTS + 1]; // Including personal device
-IPAddress clientIPs[MAX_CLIENTS];   // Array to store clients'ip address
-IPAddress clientIP(0, 0, 0, 0);  // Ip address variable with 0.0.0.0
+// MPU6050 variables
+double anglex, angley, anglez;
+double gyrox, gyroy, gyroz;
+double accx, accy, accz;
+uint16_t packetSize;
+uint16_t fifoCount;
+uint8_t fifoBuffer[64];
+Quaternion q;
+VectorFloat gravity;
+float ypr[3];
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
 
+// PID variables
+double motor_cmd_x = 0, motor_cmd_y = 0, motor_cmd_z = 0;
 
-// // ========================================================================================================================================
-// // Function Declaration
-// // ============================================================================================================================================
-void Init_Serial();     // Function to init the serial monitor
-void Init_MPU();        // Function to init the MPU6050
-void Get_MPUangle();    // Function to get the angle from the MPU6050
-void Get_accelgyro();   // Function to get the gyro and acc from the MPU6050
-void Serial_display();
+// Motor command variables
+int motor1_value = 0, motor2_value = 0, motor3_value = 0, motor4_value = 0;
 
+// Function declarations
+void handle_message(WebsocketsMessage msg);
+void sendEmergencyStop();
+void Init_WiFi();
+void Init_WebServer();
+void Init_WebSocket();
+void Init_MPU();
+void Get_MPUangle();
+void Get_accelgyro();
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
     Serial.begin(115200);
-    pinMode(BUTTON_YELLOW, INPUT_PULLDOWN); // Button OUT pin as input (no need for pull-up/pull-down)
-    pinMode(BUTTON_RED, INPUT_PULLDOWN); // Button OUT pin as input (no need for pull-up/pull-down)
+    // Initialize pins
+    pinMode(BUTTON_YELLOW, INPUT_PULLDOWN);
+    pinMode(BUTTON_RED, INPUT_PULLDOWN);
     pinMode(PHYSICAL_LED, OUTPUT);
     pinMode(VIRTUAL_LED, OUTPUT);
     pinMode(CURRENT_LED, OUTPUT);
 
-    pinMode(MOT_1, OUTPUT);
-    pinMode(MOT_2, OUTPUT);
-    pinMode(MOT_3, OUTPUT);
-    pinMode(MOT_4, OUTPUT);
+    // Initialize motors
+    Init_MotorPin();
 
-
+    // Initialize MPU6050
     Init_MPU();
-    Init_PID();      // Initialize the PID
+
+    // Initialize PID
+    Init_PID();
 
     delay(1000);
 
     Serial.println("\nChoose control method");
 
     while(1){ 
-        //-----------------Virtual Method----------------------------------------
+        // Virtual Method (Red Button)
         buttonState_Left = digitalRead(BUTTON_RED);
         if(buttonState_Left == HIGH){
             control_method = 1;
             break;
         }
-        //-----------------Physical Method-----------------------------------------
+        // Physical Method (Yellow Button)
         buttonState_Right = digitalRead(BUTTON_YELLOW);
         if(buttonState_Right == HIGH){
             control_method = 2;
@@ -125,51 +95,281 @@ void setup() {
         }
     }
 
-    // Emit Wi-Fi network
-    WiFi.softAP(ssid, password);
-    Serial.println("\nMaster ESP32 is now running as an access point.");
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.softAPIP());
-    
-    //-------------------------------------------------Red button----------------------------------------
-    if(control_method == 1){        
-        webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
-        response->addHeader("Content-Encoding", "gzip");
-        request->send(response);
-        });
-        Serial.println("Virtual control");
+    // Initialize Wi-Fi
+    Init_WiFi();
+
+    if(control_method == 1){  // Virtual control
+        Serial.println("Virtual control selected");
         digitalWrite(VIRTUAL_LED, HIGH);
-        webserver.begin();
-        server2.listen(82);
+        // Initialize Web Server and WebSocket Server
+        Init_WebServer();
+        Init_WebSocket();
     }
-    //--------------------------------------------------Yellow button--------------------------------------------
-    else if(control_method ==2){
-        // Start the web server
+    else if(control_method == 2){  // Physical control
         digitalWrite(PHYSICAL_LED, HIGH);
-        Serial.println("Physical control");
-        server.begin(); 
+        Serial.println("Physical control selected");
+        // Start TCP server for physical control
+        server.listen(82);  // Using port 82 for consistency
+        Serial.println("TCP server started for physical control on port 82");
     }
 }
 
+void loop() {
+    if(control_method == 1){  // Virtual controller
+        auto client = server.accept();
+        if (client.available()) {
+            Serial.println("WebSocket client connected");
+            client.onMessage(handle_message);
 
+            while (client.available()) {
+                client.poll();
 
-// ===========================================================================================================================================
-void Init_MPU()
-{
+                // Read data from MPU6050
+                Get_MPUangle();
+                Get_accelgyro();
+
+                // Compute PID
+                Compute_PID();
+
+                // Combine motor commands with PID outputs
+                // Adjust motor speeds based on received motor values and PID outputs
+                int pwm1 = constrain(motor1_value + motor_cmd_x - motor_cmd_y - motor_cmd_z, 0, 255);
+                int pwm2 = constrain(motor2_value - motor_cmd_x - motor_cmd_y + motor_cmd_z, 0, 255);
+                int pwm3 = constrain(motor3_value - motor_cmd_x + motor_cmd_y - motor_cmd_z, 0, 255);
+                int pwm4 = constrain(motor4_value + motor_cmd_x + motor_cmd_y + motor_cmd_z, 0, 255);
+
+                // Write PWM signals to motors
+                ledcWrite(PWM_CHA_AIN1, pwm1);
+                ledcWrite(PWM_CHA_BIN1, pwm2);
+                ledcWrite(PWM_CHA_CIN1, pwm3);
+                ledcWrite(PWM_CHA_DIN1, pwm4);
+
+                // For debugging
+                Serial.print("PWM1: "); Serial.print(pwm1);
+                Serial.print(" PWM2: "); Serial.print(pwm2);
+                Serial.print(" PWM3: "); Serial.print(pwm3);
+                Serial.print(" PWM4: "); Serial.println(pwm4);
+
+                // Delay for stability
+                delay(20);
+            }
+        }
+    }
+    else if(control_method == 2){  // Physical controller
+        // Implement physical control logic here
+        WiFiClient client = server.accept();
+        if (client) {
+            Serial.println("Physical controller connected");
+            while (client.connected()) {
+                if (client.available()) {
+                    // Read data from the client
+                    String data = client.readStringUntil('\n');
+                    data.trim();
+                    Serial.println("Received data from physical controller: " + data);
+
+                    // Parse received data
+                    int commaIndex1 = data.indexOf(',');
+                    int commaIndex2 = data.indexOf(',', commaIndex1 + 1);
+                    int commaIndex3 = data.indexOf(',', commaIndex2 + 1);
+
+                    if (commaIndex1 != -1 && commaIndex2 != -1 && commaIndex3 != -1) {
+                        motor1_value = data.substring(0, commaIndex1).toInt();
+                        motor2_value = data.substring(commaIndex1 + 1, commaIndex2).toInt();
+                        motor3_value = data.substring(commaIndex2 + 1, commaIndex3).toInt();
+                        motor4_value = data.substring(commaIndex3 + 1).toInt();
+
+                        // Constrain the motor values
+                        motor1_value = constrain(motor1_value, 0, 255);
+                        motor2_value = constrain(motor2_value, 0, 255);
+                        motor3_value = constrain(motor3_value, 0, 255);
+                        motor4_value = constrain(motor4_value, 0, 255);
+
+                        // Write PWM signals to motors
+                        ledcWrite(PWM_CHA_AIN1, motor1_value);
+                        ledcWrite(PWM_CHA_BIN1, motor2_value);
+                        ledcWrite(PWM_CHA_CIN1, motor3_value);
+                        ledcWrite(PWM_CHA_DIN1, motor4_value);
+
+                        // For debugging
+                        Serial.print("Motor values: ");
+                        Serial.print(motor1_value); Serial.print(", ");
+                        Serial.print(motor2_value); Serial.print(", ");
+                        Serial.print(motor3_value); Serial.print(", ");
+                        Serial.println(motor4_value);
+                    }
+                }
+
+                // Read data from MPU6050
+                Get_MPUangle();
+                Get_accelgyro();
+
+                // Compute PID
+                Compute_PID();
+
+                // Optionally adjust motor commands with PID outputs
+                // This depends on whether you want PID control in physical mode
+
+                // Delay for stability
+                delay(20);
+            }
+            client.stop();
+            Serial.println("Physical controller disconnected");
+        }
+    }
+}
+
+// Function to handle incoming WebSocket messages
+void handle_message(WebsocketsMessage msg) {
+    String data = msg.data();
+
+    // Handle emergency stop command
+    if (data == "EMERGENCY_STOP") {
+        sendEmergencyStop();
+        return;
+    }
+
+    // Split the incoming data by commas
+    int commaIndex1 = data.indexOf(',');
+    int commaIndex2 = data.indexOf(',', commaIndex1 + 1);
+    int commaIndex3 = data.indexOf(',', commaIndex2 + 1);
+
+    if (commaIndex1 != -1 && commaIndex2 != -1 && commaIndex3 != -1) {
+        motor1_value = data.substring(0, commaIndex1).toInt();
+        motor2_value = data.substring(commaIndex1 + 1, commaIndex2).toInt();
+        motor3_value = data.substring(commaIndex2 + 1, commaIndex3).toInt();
+        motor4_value = data.substring(commaIndex3 + 1).toInt();
+
+        // Map the received values (0-100) to appropriate PWM signals (0-255)
+        motor1_value = map(motor1_value, 0, 100, 0, 255);
+        motor2_value = map(motor2_value, 0, 100, 0, 255);
+        motor3_value = map(motor3_value, 0, 100, 0, 255);
+        motor4_value = map(motor4_value, 0, 100, 0, 255);
+
+        // For debugging
+        Serial.print("Received motor values: ");
+        Serial.print(motor1_value); Serial.print(", ");
+        Serial.print(motor2_value); Serial.print(", ");
+        Serial.print(motor3_value); Serial.print(", ");
+        Serial.println(motor4_value);
+    }
+    // Handling directional movement commands
+    else if (data == "MOVE_UP") {
+        // Implement movement logic for moving up
+        // Increase motors 1 and 4, decrease motors 2 and 3
+        int movement_increment = 20;
+        motor1_value += movement_increment;
+        motor2_value -= movement_increment;
+        motor3_value -= movement_increment;
+        motor4_value += movement_increment;
+
+        // Constrain motor values
+        motor1_value = constrain(motor1_value, 0, 255);
+        motor2_value = constrain(motor2_value, 0, 255);
+        motor3_value = constrain(motor3_value, 0, 255);
+        motor4_value = constrain(motor4_value, 0, 255);
+
+        Serial.println("MOVE_UP command received");
+    }
+    else if (data == "MOVE_DOWN") {
+        // Implement movement logic for moving down
+        // Increase motors 2 and 3, decrease motors 1 and 4
+        int movement_increment = 20;
+        motor1_value -= movement_increment;
+        motor2_value += movement_increment;
+        motor3_value += movement_increment;
+        motor4_value -= movement_increment;
+
+        // Constrain motor values
+        motor1_value = constrain(motor1_value, 0, 255);
+        motor2_value = constrain(motor2_value, 0, 255);
+        motor3_value = constrain(motor3_value, 0, 255);
+        motor4_value = constrain(motor4_value, 0, 255);
+
+        Serial.println("MOVE_DOWN command received");
+    }
+    else if (data == "MOVE_LEFT") {
+        // Implement movement logic for moving left
+        // Increase motors 1 and 2, decrease motors 3 and 4
+        int movement_increment = 20;
+        motor1_value += movement_increment;
+        motor2_value += movement_increment;
+        motor3_value -= movement_increment;
+        motor4_value -= movement_increment;
+
+        // Constrain motor values
+        motor1_value = constrain(motor1_value, 0, 255);
+        motor2_value = constrain(motor2_value, 0, 255);
+        motor3_value = constrain(motor3_value, 0, 255);
+        motor4_value = constrain(motor4_value, 0, 255);
+
+        Serial.println("MOVE_LEFT command received");
+    }
+    else if (data == "MOVE_RIGHT") {
+        // Implement movement logic for moving right
+        // Increase motors 3 and 4, decrease motors 1 and 2
+        int movement_increment = 20;
+        motor1_value -= movement_increment;
+        motor2_value -= movement_increment;
+        motor3_value += movement_increment;
+        motor4_value += movement_increment;
+
+        // Constrain motor values
+        motor1_value = constrain(motor1_value, 0, 255);
+        motor2_value = constrain(motor2_value, 0, 255);
+        motor3_value = constrain(motor3_value, 0, 255);
+        motor4_value = constrain(motor4_value, 0, 255);
+
+        Serial.println("MOVE_RIGHT command received");
+    }
+}
+
+void sendEmergencyStop() {
+    ledcWrite(PWM_CHA_AIN1, 0);
+    ledcWrite(PWM_CHA_BIN1, 0);
+    ledcWrite(PWM_CHA_CIN1, 0);
+    ledcWrite(PWM_CHA_DIN1, 0);
+    motor1_value = 0;
+    motor2_value = 0;
+    motor3_value = 0;
+    motor4_value = 0;
+    Serial.println("Emergency Stop Activated!");
+}
+
+void Init_WiFi() {
+    WiFi.softAP(ssid, password);
+    Serial.println("\nESP32 is now running as an access point.");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.softAPIP());
+}
+
+void Init_WebServer() {
+    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_html_gz, sizeof(index_html_gz));
+        response->addHeader("Content-Encoding", "gzip");
+        request->send(response);
+    });
+    webserver.begin();
+    Serial.println("Web server started");
+}
+
+void Init_WebSocket() {
+    server.listen(82);
+    Serial.println("WebSocket server started on port 82");
+}
+
+void Init_MPU() {
     Wire.begin(21, 22);      // Wire.begin(I2C_SDA, I2C_SCL);
     Wire.setClock(400000);   // Set the SCL clock to 400KHz
     accelgyro.initialize();  // Initialize the accelgyro
     mpu.initialize();        // Initialize the MPU
-    mpu.dmpInitialize();     // Initialize the DMP (microchip that calculate the angle on the MPU6050 module)
+    mpu.dmpInitialize();     // Initialize the DMP
     mpu.setDMPEnabled(true); // Enable the DMP
     packetSize = mpu.dmpGetFIFOPacketSize();
-    mpu.CalibrateAccel(6); // Calibrate the accelerometer
-    mpu.CalibrateGyro(6);  // Calibrate the gyroscope
+    mpu.CalibrateAccel(6);   // Calibrate the accelerometer
+    mpu.CalibrateGyro(6);    // Calibrate the gyroscope
 }
-// ======================================================================================================================================
-void Get_MPUangle()
-{
+
+void Get_MPUangle() {
     // Clear buffer
     mpu.resetFIFO();
     // Get FIFO count
@@ -177,7 +377,7 @@ void Get_MPUangle()
     // Wait for the FIFO to be filled with the correct data number
     while (fifoCount < packetSize)
         fifoCount = mpu.getFIFOCount();
-    // read a packet from FIFO
+    // Read a packet from FIFO
     mpu.getFIFOBytes(fifoBuffer, packetSize);
     mpu.dmpGetQuaternion(&q, fifoBuffer);
     mpu.dmpGetGravity(&gravity, &q);
@@ -187,9 +387,7 @@ void Get_MPUangle()
     anglez = -ypr[0] * 180 / M_PI;
 }
 
-// ==================================================================================================================================================
-void Get_accelgyro()
-{
+void Get_accelgyro() {
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
     gyrox = gx / 131.0;
     gyroy = gy / 131.0;
@@ -198,187 +396,3 @@ void Get_accelgyro()
     accy = ay / 16384.;
     accz = az / 16384.;
 }
-// ===========================================================================================================================================
-void Serial_display()
-{
-    Serial.print(anglex);
-    Serial.print("\t");
-    Serial.print(angley);
-    Serial.print("\t");
-    Serial.println(anglez);
-}
-
-void loop() {
-    while(control_method == 1){  // Virtual_controller
-
-    }
-
-    while(control_method == 2){  // Physical_controller
-        // digitalWrite(MOT_1, HIGH);
-        // digitalWrite(MOT_2, HIGH);
-        // digitalWrite(MOT_3, HIGH);
-        // digitalWrite(MOT_4, HIGH);
-
-        // Detect for controller connection
-        if(server.hasClient()){
-            Serial.println("server has client");
-            WiFiClient client = server.available();
-            clients[0] = client;  // This client will be the controller 
-
-            // Detection warining
-            Serial.println("Controller connected");
-
-            // // Create new blank webpage
-            // client.println("HTTP/1.1 200 OK");
-            // client.println("Content-Type: text/html");
-            // client.println();
-            // // Set up for webpage
-            // client.println("<html><head><title>Controller Selection</title></head><body>");
-            // client.println("<style>");
-            // client.println("  body {");
-            // client.println("    display: flex;");
-            // client.println("    justify-content: center;");
-            // client.println("    align-items: center;");
-            // client.println("    height: 100vh;");
-            // client.println("    margin: 0;");
-            // client.println("    font-family: Arial, sans-serif;");
-            // client.println("    text-align: center;");
-            // client.println("  }");
-            // client.println("</style>");
-            // client.println("</head><body>");
-            // client.println("<h1 style='text-align: center; font-size: 50px; color: blue;'>-Mechanical Controller Method-</p>");
-            // client.println("<p style='font-size: 30px; color: black;'>Use controller for further setup</p>");
-            // client.println("<p style='font-size: 20px; color: red'>Caution: <span style='color: gray;'>Upcoming settings will not be able to be changed proactively during control stage. In case you want to change control method, you will have to start over from the beginning.</span></p>");
-            // client.println("</body></html>");
-           
-
-            while(1){
-                // Check number of drone input from controller 
-                if (clients[0].available()) {  
-                    clients[0].readBytes((uint8_t*)receivedarray, sizeof(receivedarray));
-
-                    // Print received data
-                    for (int i = 0; i < 9; i++) {
-                        Serial.print(receivedarray[i]);
-                        Serial.print("\t");
-                    }
-                    Serial.println();
-
-                    // Notice controller that the setting had completed if request is 1 drone
-                    if (receivedarray[0] == 1){
-                        // Send data back to controller
-                        clients[0].write((uint8_t*)receivedarray, sizeof(receivedarray));
-                    }
-                    break;
-                } 
-            }
-
-            while(total_drone_being_controlled <= receivedarray[0]){
-                for(int i = receivedarray[0]-1; i>=1; i--){
-                    Serial.print("Please connect drone number ");
-                    Serial.println(total_drone_being_controlled);
-
-                    connection_check_array[0] = total_drone_being_controlled;
-                    clients[0].write((uint8_t*)connection_check_array, sizeof(connection_check_array));
-
-                    while(clientConnected[total_drone_being_controlled] == false){
-                        clients[total_drone_being_controlled-1] = server.available();
-
-                        if(clients[total_drone_being_controlled-1] && clients[total_drone_being_controlled-1].connected() && clients[total_drone_being_controlled-1].remoteIP() != clients[total_drone_being_controlled-2].remoteIP()){
-                            Serial.print("Drone number ");
-                            Serial.print(total_drone_being_controlled);
-                             Serial.println(" connected");
-                            clientConnected[total_drone_being_controlled] = true;
-                            total_drone_being_controlled++;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Serial.println("Setting successfully");
-            connection_check_array[0] = 0;
-            clients[0].write((uint8_t*)connection_check_array, sizeof(connection_check_array));
-            
-            
-            while(1){
-                if (clients[0].available()){
-                    clients[0].readBytes((uint8_t*)receivedarray, sizeof(receivedarray));
-
-                    // Send data to first drone slave
-                    clients[1].write((uint8_t*)receivedarray, sizeof(receivedarray));
-
-
-                    // Print received data
-                    for (int i = 0; i < 10; i++) {
-                        Serial.print(receivedarray[i]);
-                        Serial.print("\t");
-                    }
-                    
-
-                    // Components control mode
-                    if(receivedarray[7] == -1000 && receivedarray[8] == -1000 && receivedarray[9] == -1000){
-                        // Turn on/off led to indicates current drone being control
-                        if(receivedarray[0] == 1 || receivedarray[0] == 0){
-                            digitalWrite(CURRENT_LED, HIGH);
-
-                            //Speed adjust according to control signal without tunning
-                            if(receivedarray[2] > 5 || receivedarray[3] > 5 || receivedarray[4] > 5 || receivedarray[5] > 5 || receivedarray[2] < -5 || receivedarray[3] < -5 || receivedarray[4] < -5 || receivedarray[5] < -5){
-                                Serial.println();
-                                // Send data from potentiometer to motor
-                                analogWrite(MOT_1, receivedarray[1] - receivedarray[2] + receivedarray[3] + receivedarray[4] - receivedarray[5]);
-                                analogWrite(MOT_2, receivedarray[1] - receivedarray[2] - receivedarray[3] - receivedarray[4] + receivedarray[5]);
-                                analogWrite(MOT_3, receivedarray[1] + receivedarray[2] - receivedarray[3] + receivedarray[4] - receivedarray[5]);
-                                analogWrite(MOT_4, receivedarray[1] + receivedarray[2] + receivedarray[3] - receivedarray[4] + receivedarray[5]);
-
-                                drone_1_speed = receivedarray[1];  // store current speed value in case user changed drone
-
-                            // Start tunning when stop adjust speed and having specific speed
-                            }else if(receivedarray[2] < 10 && receivedarray[3] < 10 && receivedarray[4] < 10 && receivedarray[5] < 10 && receivedarray[1] >=30){ 
-                                // Read data from MPU6050 on drone and compute pid
-                                Get_MPUangle();
-                                Get_accelgyro();
-                                Compute_PID();
-
-                                // Fiz for x y z
-                                analogWrite(MOT_1, receivedarray[1] + motor_cmd_x - motor_cmd_y - motor_cmd_z);
-                                analogWrite(MOT_2, receivedarray[1] - motor_cmd_x - motor_cmd_y + motor_cmd_z);
-                                analogWrite(MOT_3, receivedarray[1] - motor_cmd_x + motor_cmd_y - motor_cmd_z);
-                                analogWrite(MOT_4, receivedarray[1] + motor_cmd_x + motor_cmd_y + motor_cmd_z);
-
-                                drone_1_speed = receivedarray[1];  // store current speed value in case user changed drone
-                                
-                            // Begining run     
-                            }else{
-                                Serial.println();
-                                analogWrite(MOT_1, receivedarray[1]);
-                                analogWrite(MOT_2, receivedarray[1]);
-                                analogWrite(MOT_3, receivedarray[1]);
-                                analogWrite(MOT_4, receivedarray[1]);
-                            }
-
-                        }else if(receivedarray[0] != 1 && receivedarray[0] != 0){
-                            digitalWrite(CURRENT_LED, LOW);
-                            analogWrite(MOT_1, drone_1_speed);
-                            analogWrite(MOT_2, drone_1_speed);
-                            analogWrite(MOT_3, drone_1_speed);
-                            analogWrite(MOT_4, drone_1_speed);
-        
-                        }
-
-                    // IMU control mode 
-                    }else if(receivedarray[7] != -1000 && receivedarray[8] != -1000 && receivedarray[9] != -1000){
-                        if(receivedarray[0] == 1 || receivedarray[0] == 0){
-                
-                        }else if(receivedarray[0] != 1 && receivedarray[0] != 0){
-
-                        }
-                    }
-                }
-            }
-        }
-    } 
-}
-
-
-
