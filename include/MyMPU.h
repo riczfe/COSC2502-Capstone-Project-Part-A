@@ -58,6 +58,7 @@ void Get_MPUangle()
   anglex = ypr[2] * 180 / M_PI;
   angley = -ypr[1] * 180 / M_PI;
   anglez = -ypr[0] * 180 / M_PI;
+
 }
 // ================================================================
 void Get_accelgyro()
