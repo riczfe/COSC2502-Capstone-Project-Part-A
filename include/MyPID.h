@@ -4,6 +4,7 @@
 int Fall_Dectect = 0;
 extern double anglex;
 extern double angley;
+extern double anglez;
 
 // ================================================================
 // Variable declaration
@@ -14,15 +15,16 @@ extern double angley;
 // setpoint = reference setpoint, the desired angle (usually 0deg to maintain an upward position)
 // PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 
-double pid_output_x = 0, pid_output_y = 0, motor_cmd_x = 127, motor_cmd_y = 127;
+double pid_output_x = 0, pid_output_y = 0, pid_output_z = 0, motor_cmd_x = 127, motor_cmd_y = 127, motor_cmd_z = 127;
 
 // Init gain
-double kp = 10.0, ki = 0.0, kd = 0.15, anglex_setpoint = 0, angley_setpoint = 0;
+double kp = 10.0, ki = 0.0, kd = 0.15, anglex_setpoint = 0, angley_setpoint = 0, anglez_setpoint = 0;
 // Correct gain 
 // double kp = 12.0, ki = 100.0, kd = 0.15, anglex_setpoint = 1;
 
 PID myPIDforX(&anglex, &pid_output_x, &anglex_setpoint, kp, ki, kd, DIRECT);
 PID myPIDforY(&angley, &pid_output_y, &angley_setpoint, kp, ki, kd, DIRECT);
+PID myPIDforZ(&anglez, &pid_output_z, &anglez_setpoint, kp, ki, kd, DIRECT);
 
 // ================================================================
 // Function Definition
@@ -37,6 +39,10 @@ void Init_PID()
   myPIDforY.SetOutputLimits(-127, 127);
   myPIDforY.SetSampleTime(10);
 
+  myPIDforZ.SetMode(AUTOMATIC);
+  myPIDforZ.SetOutputLimits(-127, 127);
+  myPIDforZ.SetSampleTime(10);
+
 }
 // ================================================================
 void Compute_PID()
@@ -48,7 +54,7 @@ void Compute_PID()
   //   pid_output = 0; // motor stop when fall
   //   Fall_Dectect = 1;
   // }
-  motor_cmd_x = map(pid_output_x, -127, 127, -100, 100); 
+  motor_cmd_x = map(pid_output_x, -127, 127, -50, 50); 
 
 
   // Y angle tunning
@@ -58,7 +64,17 @@ void Compute_PID()
   //   pid_output = 0; // motor stop when fall
   //   Fall_Dectect = 1;
   // }
-  motor_cmd_y = map(pid_output_y, -127, 127, -100, 100);
+  motor_cmd_y = map(pid_output_y, -127, 127, -50, 50);
+
+  // Z angle tunning
+  myPIDforZ.SetTunings(kp, ki, kd);
+  myPIDforZ.Compute();
+  // if (abs(angley) > 30) {
+  //   pid_output = 0; // motor stop when fall
+  //   Fall_Dectect = 1;
+  // }
+  motor_cmd_z = map(pid_output_z, -127, 127, -50, 50);
+
  
 }
 // ================================================================
